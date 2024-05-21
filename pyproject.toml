@@ -1,0 +1,47 @@
+[project]
+name = "zbricks"
+version = "0.1.0"
+description = "A framework providing ready-to-use bricks for rapid development."
+authors = [{ name = "zdeyn", email = "zdeyn@zdeyn.com" }]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+dependencies = [
+    "werkzeug",
+    "blinker",
+    "requests",
+    "uuid",
+]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project.urls]
+homepage = "https://github.com/zdeyn/zbricks"
+repository = "https://github.com/zdeyn/zbricks"
+documentation = "https://zdeyn.github.io/zbricks"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+    "pytest-bdd",
+    "pytest-cov",
+    "coverage",
+    "mypy",
+    "rich",
+]
+
+
+
+[tool.setuptools]
+packages.find = { where = ["."], exclude = ["tests*"] }
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py", "*_should.py", "tests.py"]
+python_classes = ["Test", "Should"]
+python_functions = ["test", "should"]
+addopts = "-q -cov-report=term-missing" # --cov=zbricks -

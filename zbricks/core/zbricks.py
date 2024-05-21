@@ -1,0 +1,2 @@
+class zBricks:
+    pass
