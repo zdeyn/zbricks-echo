@@ -25,6 +25,21 @@ class zGetRequestEvent(zRequestEvent):
 class zRequestResponseMachine(zMachine):
     def __init__(self) -> None:
         super().__init__()
+    
+        self.routes = {}
+        self.errors = {}
+
+    def route(self, path):
+        def decorator(func):
+            self.routes[path] = func
+            return func
+        return decorator
+
+    def error(self, path):
+        def decorator(func):
+            self.errors[path] = func
+            return func
+        return decorator
 
     def handle_request(self, request: Request) -> Response:
         logger.debug(f"Request: {request}, path = {request.path}")
@@ -49,10 +64,11 @@ class zRequestResponseMachine(zMachine):
         return response
 
     def process_request_events(self, event: zRequestEvent) -> Response:
-
         match event:
-            case zGetRequestEvent():
-                return Response(f"Default 200 OK: {event.request.path}", status=200)
+            case zGetRequestEvent() if event.request.path in self.routes:
+                return self.routes[event.request.path](event.request)
+            case zGetRequestEvent() if 404 in self.errors:
+                return self.errors[404](event.request)
             case _:
                 return Response(f"Default 404 Error: {event.request.path}", status=404)
 
