@@ -1,8 +1,7 @@
 # Dashboard, protected by OAuth2/JWT
 
 
-
-- [ ] ### "anonymous can access index route"
+### "anonymous can access index route"
     (As an `Anonymous`, I want to `access the index route`, so I can _see unprivileged content_)
 
     Given: An anonymous visitor
