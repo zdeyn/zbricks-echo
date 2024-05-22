@@ -38,7 +38,6 @@ def test_500_internal_server_error(machine : zRequestResponseMachine):
     assert data.startswith('Internal Server Error:')
 
 
-@pytest.mark.skip(reason="HTTP route handlers not yet implemented")
 def test_can_define_route(machine : zRequestResponseMachine):
 
     @machine.route('/foo')
@@ -52,7 +51,7 @@ def test_can_define_route(machine : zRequestResponseMachine):
     assert response.data == b'Foo Response'
 
 
-@pytest.mark.skip(reason="Default HTTP error handlers not yet implemented")
+
 def test_default_404_not_found(machine : zRequestResponseMachine):
     
     request : Request = create_request('GET', '/default-does-not-exist')
@@ -61,7 +60,8 @@ def test_default_404_not_found(machine : zRequestResponseMachine):
     assert response.status_code == 404
     assert response.data == b'Default 404 Error: /default-does-not-exist'
 
-@pytest.mark.skip(reason="Custom HTTP error handlers not yet implemented")
+
+
 def test_custom_404_not_found(machine : zRequestResponseMachine):
 
     @machine.error(404)
