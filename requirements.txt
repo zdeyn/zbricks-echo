@@ -1,4 +1,3 @@
-werkzeug
-blinker
+flask
 requests
 uuid
