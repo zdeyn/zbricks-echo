@@ -6,11 +6,11 @@ from typing import Generator
 
 from .helpers import create_request as _create_request
 
-from zbricks.machines.request_response import zRequestResponseMachine, Request, Response
+from zbricks import zApp, Request, Response
 
 @pytest.fixture
-def machine() -> Generator[zRequestResponseMachine, None, None]:
+def app() -> Generator[zApp, None, None]:
 
-    m = zRequestResponseMachine()
+    zapp = zApp(__name__)
    
-    yield m
+    yield zapp

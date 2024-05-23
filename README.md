@@ -1,131 +1,148 @@
+# `zBricks` - `Flask` gets zdeyn'd
 
-# zBricks
+## What is it?
 
-## `zbricks.events.zEvent` System
+`zBricks` is a suite of powerful subclasses, extensions, blueprints, middleware, and mixins designed to turbocharge Flask with enhanced behaviors and interfaces. It's Flask, but more modular, more flexible, and more... _me_.
 
-All `zEvent` subclasses are dataclasses, via a handy @zevent(...) configuration decorator for easy declarations.
+## _Why_ is it?
 
+Because I (`zdeyn`) got tired of fighting with Flask's limitations. Instead of reinventing the wheel and creating a whole new framework (which would probably just end up being a crappier version of Flask anyway), I've decided to supercharge Flask itself. Thus, `zBricks` was born - a toolkit to make Flask do more, better, and faster.
 
-```python
-from zbricks import zevent, event, zEvent, zEqualityFilter
-from dataclasses import field
+## How shall it be?
 
-@zevent(...) # declare a frozen dataclass subclass of zEvent, registered with the mutual internal registry
-class zSubEvent:
-    foo: str = field(...)
+**100% `Flask` / Pallets Compatible**
 
-@event(zEvent)
-def zevent_handler(event:zEvent):
-    # this handler will be triggered regardless of the event type/subtype
-    assert isinstance(event, zEvent)
-    assert isinstance(event, zSubEvent) # _we_ know it's actually a zSubEvent...
-    assert hasattr(event, 'foo') # we only know we're getting a zEvent, so be careful checking what arrived!
+`zBricks` is not a fork of Flask; it's an extension, wrapper and mixin, all at once. While doing so, it's essentially a drop-in replacement. 
 
-    return f'zEvent({getattr(event, 'foo', None)})'
+It builds on top of Flask, ensuring complete compatibility with the Flask ecosystem. Think of it as Flask on steroids – all the goodness of Flask, but with extra muscle and capabilities.
 
-@event(zSubEvent, filter=zEqualityFilter(zSubEvent.foo, 'bar'))
-def zsubevent_handler(event:zSubEvent):
-    # this handler should be triggered ONLY when it's a zSubEvent fired with foo='bar'
-    assert isinstance(event, zSubEvent)
-    assert event.foo == 'bar'
+---
 
-    return f'zSubEvent({getattr(event, 'foo', None)})'
+## `zApp`: The Heart of zBricks
 
-unmatched_replies = zSubEvent.fire(foo = 'no-match')
-assert unmatched_replies == [
-    (zEvent, zevent_handler, 'zEvent(no-match)'),
-]
+At the core of `zBricks` is the `zApp` class. 
 
-matched_replies = zSubEvent.fire(foo = 'bar')
-assert matched_replies == [
-    (zEvent, zevent_handler, 'zEvent(bar)'),
-    (zSubEvent, zsubevent_handler, 'zSubEvent(bar)'),
-]
-```
+It inherits from Flask, and that's where the fun starts - from pre-flight configuration checks through to auto-wired pre-package starter kits, the boring stuff is gone and productivity is _right there, friction-free_.
 
+## Features
 
+- **Pre-Flight Configuration Check**: Ensures all necessary configurations are in place before your app starts running.
+- **Hierarchical Signaling/Event System**: Advanced event handling to keep your application organized and responsive. `zSignal` and `zEvent` wrap `blinker.NamedSignal` for shenanigans, including subscriptions for `zAncestorEvent` being notified when `zChildEvent` is fired. The firing of a `zSignal` or `zEvent` results in a _sequence of replies_, which may be filtered. The replies may be interpreted and processed as desired.
+- **Priority-based/Cascading Route Handling**: Why connect `'/product/<uuid:sku\>'` to just one end-point, when you can connect it to _a sequence of end-points, which can be filtered and evaluated before being used?_. `werkzeug.router` has never worked so hard, or been bent so far over backwards!
+- **URI-to-Event Routing**: Speaking of poor `werkzeug.router`, now it's doing backflips! The previously-mentioned _sequence of replies_ from `zEvent` firings combines nicely with the _sequence of end-points_ our updated router supports.
 
+## Extensions and Blueprints
 
-## zRequestResponseMachine Prototype
+`zBricks` comes with a set of ready-to-use extensions and blueprints that can be easily integrated into your `zApp`.
 
-This project is a prototype for the `zRequestResponseMachine`, which is part of the `zBricks` framework. The `zRequestResponseMachine` is designed to handle HTTP requests and generate appropriate responses, serving as a foundational component for building web applications using the `zBricks` framework.
+### `zAuth` = (`zAuthentication.zUser` + `zAuthorization.(zPermission, zRole)`)
 
-## Installation
+An extension that brings both _authorization_ (via `authlib`) and _authentication_ (via custom RBAC-inspired `zUser`, `zPermission`, `zRole` relationships) capabilities to your app.
 
-Clone the repository to your local machine:
+## Functional Interface
 
-```sh
-git clone https://github.com/zdeyn/zbricks.git
-```
+A consistent, namespaced functional interface that makes integrating `zBricks` components into your app a breeze.
 
-Install the required dependencies:
-
-```sh
-pip install -r requirements.txt
-```
-
-## Usage
-
-To use the `zRequestResponseMachine`, you can define routes and their corresponding handlers using `@zRequestResponseMachine.route`, a decorator connecting a handler to an event - in this case, `zRouteEvent`, an instance of `zEvent`.
-
-Here's an example:
+### Example Usage
 
 ```python
-# go.py
+# app.py
 
-from zbricks.machines import zRequestResponseMachine, Request, Response
+from typing import Union
+from zbricks import zConfig, zRequest, zResponse  # Flask's `Request` and `Response` classes, in a hat
+from zbricks.tools import create_app, load_config  # functional tools
+from zbricks.app import zApp  # Flask's `Flask` class, with a nice new dress
+from zbricks.app.events import zHandleRequest  # zHandleRequest is a zCommandEvent(zEvent)
+from zbricks.auth import zAuth, zAuthenticatedRequest
+from zbricks.auth.events import zRequestAuthenticated  # zRequestAuthenticated is a zStateChangedEvent(zEvent)
+from zbricks.auth.tools import has_credentials, extract_credentials, satisfies_permission, request_factory
+from zbricks.auth.models import zUser, zCredentials, zPermission  # frozen dataclasses
 
-app = zRequestResponseMachine()
+app: zApp = create_app(__name__)
+auth: zAuth = app.connect_brick(zAuth)  # handles all internal wiring and configuration, where possible
 
-@app.route('/')
-def index(request: Request):
-    return Response('Hello, World!', status=200, content_type='text/plain')
+# Middleware: "extract authentication details and attempt upgrade of zRequest to zAuthenticatedRequest"
+@app.before(zHandleRequest)  # this handler shall be fired _prior_ to `zHandleRequest` being fired
+def upgrade_request(request: zRequest) -> Union[zRequest, zAuthenticatedRequest]:
+    """Middleware to upgrade a zRequest to a zAuthenticatedRequest if credentials are present."""
+    if has_credentials(request):
+        credentials = extract_credentials(request)
+        previous_request = request
+        request = request_factory(zAuthenticatedRequest, request)
+        if request is not previous_request:  # state changed, notify everyone before return
+            zRequestAuthenticated.fire('upgrade_request', request=request, previous_state=previous_request)
+    return request
 
-@app.error(404)
-def foo(request: Request):
-    return Response('Custom Not Found', status=404, content_type='text/plain')
+@app.map('/dashboard', event=zAuthenticatedRequest, filter=lambda req: satisfies_permission(req.user, zPermission('moderator')))
+def moderator_dashboard(request: zAuthenticatedRequest) -> zResponse:
+    """Handler for the moderator dashboard."""
+    # Inject moderator tools, handle business logic, etc. here
+    response = zResponse("Moderator Dashboard Content")
+    return response
+
+@app.map('/dashboard', event=zAuthenticatedRequest)
+def user_dashboard(request: zAuthenticatedRequest) -> zResponse:
+    """Handler for the user dashboard."""
+    # Inject user tools, handle business logic, etc. here
+    response = zResponse("User Dashboard Content")
+    return response
+
+@app.map('/dashboard', event=zRequest)
+def anonymous_dashboard(request: zRequest) -> zResponse:
+    """Handler for the anonymous dashboard."""
+    # Present "No, you're not authenticated!" and "Here's how to become so..." details
+    # rather than an 'unauthorized' HTTP status
+    response = zResponse("Anonymous Dashboard Content - Please authenticate.")
+    return response
 
 if __name__ == '__main__':
-    app.run(use_reloader=True)
-
+    config: zConfig = load_config()
+    config['AUTH_SECRET_KEY'] = 'supersecretkey'
+    app.init(config)  # Perform internal initialization, blueprint init, etc.
+    app.run()
 ```
 
-Then, run the `zRequestResponseMachine`:
+## Getting Started
 
-```sh
-python go.py
+1. **Install `zBricks`**
+
+```bash
+pip install zbricks
 ```
 
-You can now access the defined routes in your web browser or through HTTP requests.
+2. **Create Your zApp**
 
-## Testing
-
-Testing the `zRequestResponseMachine` is straight-forward:
+Use the `create_app` factory function to create an instance of `zApp`.
 
 ```python
-# tests/test_request_response.py
-import pytest
+from zbricks import create_app
 
-from zbricks.machines import zRequestResponseMachine, Request, Response
-
-from .helpers import create_request # builds Request objects
-
-def test_index(machine : zRequestResponseMachine):
-    request = create_request('GET', '/')
-    response = machine.handle_request(request)
-    
-    assert response.status_code == 200
-    assert response.data == b'Hello, World!'
-    assert response.content_type == 'text/plain'
-
-def test_custom_not_found(machine : zRequestResponseMachine):
-    
-    request = create_request('GET', '/custom-does-not-exist')
-    response = machine.handle_request(request)
-    
-    assert response.status_code == 404
-    assert response.data == b'Custom Not Found Error: /custom-does-not-exist'
-    assert response.content_type == 'text/plain'
-
+app = create_app(__name__)
 ```
 
+3. **Add Extensions and Blueprints**
+
+Integrate the provided extensions and blueprints as needed.
+
+```python
+from zbricks.auth import zAuth
+auth: zAuth = app.connect_brick(zAuth)  # handles all internal wiring and configuration of blueprint, ready for `app.init()`
+```
+
+4. **Run Your Application**
+
+Ensure all configurations are in place and run your application as usual.
+
+```python
+from zbricks import zConfig, load_config
+
+if __name__ == '__main__':
+    config: zConfig = load_config()
+    config['AUTH_SECRET_KEY'] = 'supersecretkey'
+    app.init(config)  # Perform internal initialization, blueprint init, etc.
+    app.run()
+```
+
+## Conclusion
+
+`zBricks` is designed to take your Flask applications to the next level. With enhanced functionality and seamless integration, it's the perfect companion for developers who love Flask but need a bit more power and flexibility. So go ahead, give Flask a boost, and get zdeyn'd with `zBricks`!
