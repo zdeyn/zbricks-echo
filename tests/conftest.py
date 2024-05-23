@@ -4,8 +4,6 @@ import sys, os
 import pytest
 from typing import Generator
 
-from .helpers import create_request as _create_request
-
 from zbricks import zApp, Request, Response
 
 @pytest.fixture
@@ -14,3 +12,8 @@ def app() -> Generator[zApp, None, None]:
     zapp = zApp(__name__)
    
     yield zapp
+
+@pytest.fixture
+def client(app : zApp) -> Generator[Request, None, None]:
+    with app.test_client() as client:
+        yield client
