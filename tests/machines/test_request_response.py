@@ -5,7 +5,7 @@ from rich import print
 from zbricks.machines.request_response import zRequestResponseMachine, Request, Response
 from zbricks.machines.request_response import zUnknownMethodException
 from zbricks.machines.request_response import logger
-logger.setLevel('DEBUG')
+# logger.setLevel('DEBUG')
 
 from ..helpers import create_request
 

@@ -3,11 +3,40 @@
 from werkzeug.wrappers import Request, Response
 from werkzeug.serving import run_simple
 
-from logging import basicConfig, getLogger
-logger = getLogger('zbricks')
-basicConfig(level='ERROR')
+import logging
+from colorlog import ColoredFormatter
 
-from ..core.zmachine import zMachine, zEvent
+# Create a logger
+logger = logging.getLogger('zbricks')
+logger.setLevel(logging.CRITICAL)  # Set minimum logging level
+
+# Create a handler (e.g., console handler)
+ch = logging.StreamHandler()
+
+# Define a formatter with line breaks and colors
+formatter = ColoredFormatter(
+    "\n%(log_color)s%(levelname)-8s%(reset)s %(blue)s%(message)s",
+    datefmt=None,
+    reset=True,
+    log_colors={
+        'DEBUG': 'cyan',
+        'INFO': 'green',
+        'WARNING': 'yellow',
+        'ERROR': 'red',
+        'CRITICAL': 'red,bg_white',
+    },
+    secondary_log_colors={},
+    style='%'
+)
+
+# Set formatter to the handler
+ch.setFormatter(formatter)
+
+# Add handler to the logger
+logger.addHandler(ch)
+
+from ..core.events import zEvent
+from ..core.zmachine import zMachine
 
 class zException(Exception):
     pass
