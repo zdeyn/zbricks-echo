@@ -14,6 +14,6 @@ def app() -> Generator[zApp, None, None]:
     yield zapp
 
 @pytest.fixture
-def client(app) -> Generator[Request, None, None]:
+def client(app : zApp) -> Generator[Request, None, None]:
     with app.test_client() as client:
         yield client
