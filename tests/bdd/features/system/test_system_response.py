@@ -58,18 +58,12 @@ def it_responds_to_requests(response: Response) -> bool:
 
 @then('the system responds with 200 OK')
 def it_responds_with_200(response: Response) -> bool:
-    print(response.status_code)
-    print(response.data)
     return response.status_code == 200
 
 @then('the system responds with 404 Not Found')
 def it_responds_with_404(response: Response) -> bool:
-    print(response.status_code)
-    print(response.data)
     return response.status_code == 404
 
 @then('the system responds with 500 Internal Server Error')
 def it_responds_with_404(response: Response) -> bool:
-    print(response.status_code)
-    print(response.data)
     return response.status_code == 500
