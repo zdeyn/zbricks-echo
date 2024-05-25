@@ -44,3 +44,4 @@ python_files = ["test_*.py", "*_test.py", "*_should.py", "tests.py"]
 python_classes = ["Test", "Should"]
 python_functions = ["test", "should"]
 addopts = "-q -cov-report=term-missing" # --cov=zbricks -
+bdd_features_base_dir = "tests"
