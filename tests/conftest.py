@@ -19,7 +19,7 @@ def app() -> Generator[_zapp_class, None, None]:
     app = create_app()
     with app.app_context():
         db : SQLAlchemy = app.extensions.get('sqlalchemy')
-        db.engine.echo = True
+        # db.engine.echo = True
         db.drop_all() 
         db.create_all()
         yield app        
