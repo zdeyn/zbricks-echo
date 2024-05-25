@@ -6,14 +6,14 @@ from werkzeug.wrappers import Response
 from zbricks import zApp
 from flask import Flask
 
-@pytest.fixture
-def app():
-    return zApp()
-    # return Flask(__name__)
+# @pytest.fixture
+# def app():
+#     return zApp()
+#     # return Flask(__name__)
 
-@pytest.fixture
-def client(app):
-    return Client(app, Response)
+# @pytest.fixture
+# def client(app):
+#     return Client(app, Response)
 
 @given(parsers.parse('the endpoint "{endpoint}" exists'))
 def app_with_endpoint(app, endpoint):
