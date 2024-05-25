@@ -4,21 +4,19 @@ import sys, os
 import pytest
 from typing import Generator
 
+from pytest_bdd import scenarios, scenario, given, when, then
+
 from zbricks import zApp, Request, Response
 
-# @pytest.fixture
-# def app(): pass
+@pytest.fixture
+@given('a system', target_fixture="system")
+def system():
+    zapp = zApp(__name__)
+    return zapp
 
-# @pytest.fixture
-# def client(): pass
+# --=[ Givens: Clients ]=--
 
-# def app() -> Generator[zApp, None, None]:
-
-#     zapp = zApp(__name__)
-   
-#     yield zapp
-
-# @pytest.fixture
-# def client(app : zApp) -> Generator[Request, None, None]:
-#     with app.test_client() as client:
-#         yield client
+@given('a client', target_fixture="client")
+def client(system: zApp):
+    with system.test_client() as client:
+        return client

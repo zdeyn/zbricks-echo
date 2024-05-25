@@ -1,6 +1,7 @@
 # tests/bdd/features/system/system-response.feature
 
 Feature: System Response
+  The system should respond to requests with a Response object
 
   Scenario: System responds with Response object
     Given a system
