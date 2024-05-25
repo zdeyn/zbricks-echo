@@ -11,12 +11,6 @@ scenarios("system")
 # remember, givens need @pytest.fixture decorator
 
 @pytest.fixture
-@given('a system', target_fixture="system")
-def system():
-    zapp = zApp(__name__)
-    return zapp
-
-@pytest.fixture
 @given('a system with a resource', target_fixture="system")
 def system_with_resource(system:zApp):
     @system.route("/resource")
@@ -34,10 +28,6 @@ def system_with_bugged_resource(system:zApp):
 
 # --=[ Givens: Clients ]=--
 
-@given('a client', target_fixture="client")
-def client(system: zApp):
-    with system.test_client() as client:
-        return client
 
 # --=[ Whens ]=--
 
