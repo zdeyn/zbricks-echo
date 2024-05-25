@@ -3,7 +3,8 @@ from rich import print
 from pytest_bdd import scenarios, scenario, given, when, then
 from flask.testing import FlaskClient
 
-from zbricks import zApp, Response
+from zbricks import zApp
+from werkzeug.wrappers import Response
 
 scenarios("system")
 
@@ -55,5 +56,5 @@ def it_responds_with_404(response: Response) -> bool:
     return response.status_code == 404
 
 @then('the system responds with 500 Internal Server Error')
-def it_responds_with_404(response: Response) -> bool:
+def it_responds_with_500(response: Response) -> bool:
     return response.status_code == 500
