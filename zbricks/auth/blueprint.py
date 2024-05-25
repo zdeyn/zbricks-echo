@@ -8,8 +8,8 @@ from flask import Response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import select
 from flask_jwt_extended import create_access_token, get_jwt_identity, set_access_cookies, verify_jwt_in_request
-from authlib.integrations.flask_client import FlaskOAuth2App
-from flask_login import login_user, logout_user, login_required, current_user
+from authlib.integrations.flask_client import FlaskOAuth2App # type: ignore
+from flask_login import login_user, logout_user, login_required, current_user # type: ignore
 
 from .models import User # ,DiscordProfile
 from .signals import NEW_USER_CREATED
@@ -18,7 +18,7 @@ auth_bp = Blueprint('auth', __name__)
 
 def save_token(token, user: User):
 
-    db : SQLAlchemy = current_app.extensions.get('sqlalchemy')
+    db : SQLAlchemy = current_app.extensions.get('sqlalchemy') # type: ignore
     user.access_token = token['access_token']
     user.refresh_token = token.get('refresh_token')
     db.session.commit()
@@ -26,9 +26,9 @@ def save_token(token, user: User):
     current_app.logger.debug(f'Saved token for user {user.username}')
 
 def update_token(token, refresh_token=None, access_token=None):
-    db : SQLAlchemy = current_app.extensions.get('sqlalchemy')
+    db : SQLAlchemy = current_app.extensions.get('sqlalchemy') # type: ignore
 
-    stmt = select(User).where(User.access_token == token['access_token'])
+    stmt = select(User).where(User.access_token == token['access_token']) 
     user = db.session.execute(stmt).scalar_one_or_none()
 
     if user:
@@ -62,7 +62,7 @@ def index():
 
 @auth_bp.route('/login')
 def login():
-    discord : FlaskOAuth2App = current_app.extensions.get('authlib.integrations.flask_client').discord
+    discord : FlaskOAuth2App = current_app.extensions.get('authlib.integrations.flask_client').discord # type: ignore
 
     redirect_uri = url_for('.authorize', _external=True)
     return discord.authorize_redirect(redirect_uri)    
@@ -78,8 +78,8 @@ def logout():
 
 @auth_bp.route('/authorize')
 def authorize():
-    discord : FlaskOAuth2App = current_app.extensions.get('authlib.integrations.flask_client').discord
-    db : SQLAlchemy = current_app.extensions.get('sqlalchemy')
+    discord : FlaskOAuth2App = current_app.extensions.get('authlib.integrations.flask_client').discord # type: ignore
+    db : SQLAlchemy = current_app.extensions.get('sqlalchemy') # type: ignore
 
     token = discord.authorize_access_token()
 
@@ -135,4 +135,5 @@ def protected():
 
 @NEW_USER_CREATED.connect
 def test_new_user_created_signal(sender, **extra):
-    print(f'Sender {sender} sent {extra}')
+    # print(f'Sender {sender} sent {extra}')
+    pass
