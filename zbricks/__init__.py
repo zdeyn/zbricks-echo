@@ -2,6 +2,9 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 
+
+# class zEvent:
+
 class zApp:
     def __init__(self, import_name = None):
         self._import_name = import_name
@@ -20,16 +23,16 @@ class zApp:
         urls = self.url_map.bind_to_environ(environ)
         try:
             endpoint, args = urls.match()
-            response = getattr(self, endpoint)(request, **args)
+            response = getattr(self, endpoint)(**args)
         except Exception as e:
-            response = self.handle_404(request)
+            response = self.handle_404()
         return response(environ, start_response)
 
-    def handle_404(self, request):
+    def handle_404(self):
         return Response('Not Found', status=404)
 
     def __call__(self, environ, start_response):
         return self.wsgi_app(environ, start_response)
 
-    def run(self, host='127.0.0.1', port=5000):
-        run_simple(host, port, self)
+    def run(self, host='localhost', port=5000, **kwargs):
+        run_simple(host, port, self, **kwargs)
