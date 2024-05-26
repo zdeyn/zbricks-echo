@@ -29,7 +29,7 @@ from ..extensions import db
 #     discord_id: Mapped[str] = mapped_column(String(64), ForeignKey('discord_profiles.id'), unique=True, index=True)
 #     discord_profile: Mapped[DiscordProfile] = relationship("DiscordProfile", backref="user", uselist=False)
 
-class User(db.Model):
+class User(db.Model): # type: ignore
     __tablename__ = 'users'
     id: Mapped[str] = mapped_column(String(64), primary_key=True, default=lambda: str(uuid.uuid4()))
     discord_id: Mapped[str] = mapped_column(String(64), nullable = False, unique=True, index=True)
