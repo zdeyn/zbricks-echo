@@ -10,17 +10,6 @@ def create_app(config_class=DevelopmentConfig):
     
     return app
 
-
-
-# def create_app():
-#     app = zApp(__name__)
-
-#     @app.route('/')
-#     def index():
-#         return Response('Hello World!')
-
-#     return app
-
 if __name__ == '__main__':
     app = create_app()
     app.run(use_reloader=True)
