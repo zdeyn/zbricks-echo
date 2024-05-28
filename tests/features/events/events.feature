@@ -14,10 +14,18 @@ Feature: Custom event dispatcher
             | zEvent         | data       | foo        |
             | zSampleEvent   | data       | bar        |
     
-    Scenario: "zEvent" and "zSampleEvent" are both dispatched, received by single handler once
+    Scenario: "zEvent" and "zSampleEvent" are both subscribed by a single handler, zSampleEvent is dispatched
         Given a handler
         And the handler is subscribed to "zEvent" events
         And the handler is subscribed to "zSampleEvent" events
         When I send "zSampleEvent" with its "data" property set to "baz"
         Then the subscriber should receive "zSampleEvent" with its "data" property set to "baz"
         And the subscriber should not receive "zEvent"
+    
+    Scenario: "zEvent" and "zSampleEvent" are both subscribed by a single handler, "zEvent" is dispatched
+        Given a handler
+        And the handler is subscribed to "zEvent" events
+        And the handler is subscribed to "zSampleEvent" events
+        When I send "zEvent" with its "data" property set to "qux"
+        Then the subscriber should receive "zEvent" with its "data" property set to "qux"
+        And the subscriber should not receive "zSampleEvent"
