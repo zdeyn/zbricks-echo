@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Callable, Optional, Type
 from flask import Flask, Request, Response, request
 from blinker import ANY, Namespace
 from dataclasses import dataclass, field
@@ -11,10 +11,15 @@ logger = zbricks_logger('zEvent')
 @dataclass(frozen=True)
 class zEvent:
     name: str = field(default='zEvent', init=False)
+    data: Any = None
 
     def __init_subclass__(cls) -> None:
         logger.zevent(f"Instantiating zEvent subclass, cls = {cls}")
         cls.name = cls.__name__
+
+@dataclass(frozen=True)
+class zSampleEvent(zEvent):
+    pass
 
 @dataclass(frozen=True)
 class zRequestEvent(zEvent):
@@ -24,6 +29,16 @@ class zRequestEvent(zEvent):
 class zEventDispatcher:
     _app : Optional[Flask] = None
     _namespace: Optional[Namespace] = None
+
+    @classmethod
+    def event_class_from_name(cls, name: str) -> Type:    
+        match name:
+            case 'zEvent':
+                return zEvent
+            case 'zSampleEvent':
+                return zSampleEvent
+            case _:
+                raise ValueError(f"Unknown event type: {name}")
 
     def __init__(self, app: Optional[Flask]):
         logger.zext(f"Creating zEventDispatcher, app = '{app}'")
@@ -42,7 +57,7 @@ class zEventDispatcher:
         logger.debug(f"Creating Namespace for zEventDispatcher")
         self._namespace = Namespace() 
         zev = self._namespace.signal('zevent')
-        zev.connect(self.default_zevent_handler, sender=ANY)
+        # zev.connect(self.default_zevent_handler, sender=ANY)
         zev.connect(self.sample_zrequestevent_handler, sender='zRequestEvent')
 
         logger.zext(f"Registering 'before_request' handler, app = '{app}'")
@@ -63,6 +78,13 @@ class zEventDispatcher:
         logger.debug(f"Getting namespace from zEventDispatcher, namespace = '{self._namespace}'")
         return self._namespace
     
+    def subscribe(self, event_cls: Type, handler: Callable, filter = None):
+        ev_name = event_cls.name
+        zev = self._namespace.signal('zevent') # type: ignore[union-attr]
+        logger.zevent(f"Subscribing: zev = '{zev}', ev_name = '{ev_name}', handler = '{handler}', filter = '{filter}'")
+        # logger.debug(f"Signal = '{zev}', sender = '{ev_name}'")
+        zev.connect(handler, sender=ev_name)
+    
     def send_event(self, event: zEvent):
         logger.zevent(f"Sending event '{event.name}': '{event}'")
 
@@ -72,12 +94,11 @@ class zEventDispatcher:
         logger.zevent(f"Replies = '{replies}'")
         return replies
 
-    def default_zevent_handler(self, sender, event : zEvent):
-        logger.debug(f"Default zEvent handler, sender = '{sender}', event =  '{event}'")
-
     def sample_zrequestevent_handler(self, sender, event: zRequestEvent):
-        logger.debug(f"Sample zRequestEvent handler, sender = '{sender}', event = '{event}'")
+        msg = f"Handled by sample_zrequestevent_handler"
+        logger.debug(f"sample_zrequestevent_handler, msg = '{msg}', sender = '{sender}', event = '{event}'")
         
         if event.request.path == '/handled-by-event':
-            logger.debug(f"Request path is '/handled-by-event'")
-            return "Handled by sample_zrequestevent_handler", 200
+            msg = f"Request path is '{event.request.path}'"
+            logger.debug(msg)
+            return Response(msg, status=200, content_type='text/plain')

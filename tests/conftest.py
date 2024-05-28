@@ -1,6 +1,6 @@
 # tests/conftest.py
 import pytest
-from typing import Generator
+from typing import Any, Generator, List
 from unittest.mock import MagicMock
 from pytest_mock import MockFixture
 from flask.testing import FlaskClient
@@ -30,6 +30,16 @@ def app() -> Generator[zApp, None, None]:
 def client(app : zApp) -> Generator[FlaskClient, None, None]:
     with app.test_client() as client:
         yield client
+
+@pytest.fixture
+def storage(app : zApp) -> dict:
+    return {
+        'app': app,
+        'request': Request|None, # type: ignore
+        'response': Response|None, 
+        'handler_calls': [],
+        'replies': [],
+    }
 
 @pytest.fixture
 def mock_discord(app : zApp, mocker: MockFixture) -> MagicMock:

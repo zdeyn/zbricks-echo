@@ -3,7 +3,7 @@ from pytest_bdd import scenarios
 import os
 
 # Import common steps
-from .steps import *
+from .steps.routes import *
 
 # Discover and run all feature files in the 'features' directory
 features_dir = os.path.join(os.path.dirname(__file__), 'features')
