@@ -40,25 +40,22 @@ def update_token(token, refresh_token=None, access_token=None):
     else:
         current_app.logger.error(f'Could not find user for token {token}')
 
-@auth_bp.route('/')
-def index():
-    flash_data = get_flashed_messages(with_categories=True, category_filter=['success'])
-    login_uri = url_for('.login')
-    logout_uri = url_for('.logout')
-    out = ''
-    out += f'<h3>Flash: {flash_data}</h3>'
-    out += f'<h1>Auth Blueprint</h1>'
-    out += f'<a href="{login_uri}">Login</a>'
-    out += f'<br/><a href="{logout_uri}">Logout</a>'
+# @auth_bp.route('/')
+# def index():
+#     flash_data = get_flashed_messages(with_categories=True, category_filter=['success'])
+#     login_uri = url_for('.login')
+#     logout_uri = url_for('.logout')
+#     out = ''
+#     out += f'<h3>Flash: {flash_data}</h3>'
+    
+#     if current_user.is_authenticated:
+#         out += f'<p>Current User Name: {current_user.username}</p>'
+#         out += f'<p>Current User ID: {current_user.id}</p>'
+#         out += f'<p>Current User Discord ID: {current_user.discord_id}</p>'
+#     else:
+#         out += f'<p>Not logged in</p>'
 
-    if current_user.is_authenticated:
-        out += f'<p>Current User Name: {current_user.username}</p>'
-        out += f'<p>Current User ID: {current_user.id}</p>'
-        out += f'<p>Current User Discord ID: {current_user.discord_id}</p>'
-    else:
-        out += f'<p>Not logged in</p>'
-
-    return out
+#     return out
 
 @auth_bp.route('/login')
 def login():
@@ -72,8 +69,9 @@ def logout():
     response = jsonify({'logout': True})
     response.delete_cookie('access_token_cookie')
     response.status_code = 302
-    response.headers['Location'] = url_for('.index')
+    response.headers['Location'] = url_for('index')
     logout_user()
+    flash(message = 'Logged out successfully', category='success')
     return response
 
 @auth_bp.route('/authorize')
@@ -120,7 +118,7 @@ def authorize():
     # if not url_has_allowed_host_and_scheme(next, request.host):
     #     return flask.abort(400)
 
-    return redirect(next or url_for('.index'))
+    return redirect(next or url_for('index'))
 
 @auth_bp.route("/protected")
 @login_required

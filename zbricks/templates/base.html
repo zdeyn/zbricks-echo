@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}zBricks Default Title{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>{% block header %}zBricks Header{% endblock %}</h1>
+        <nav>      Foo:  
+            <ul>
+                {% for link in navigation %}
+                    <li><a href="{{ link[1] }}">{{ link[0] }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        {% block content %}zBricks Content{% endblock %}
+    </main>
+    <footer>
+        <p>{% block footer %}zBricks Footer{% endblock %}</p>
+        {% if current_user.is_authenticated %}
+            <p>Logged in as {{ current_user.username }}</p>
+        {% else %}
+            <p>Not logged in</p>
+        {% endif %}
+    </footer>
+</body>
+</html>

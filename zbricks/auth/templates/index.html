@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}Project Specific Title{% endblock %}
+{% block header %}Project Specific Header{% endblock %}
+{% block content %}
+    <p>This is the project-specific content.</p>
+    {{ super() }}
+    {{ content}}
+{% endblock %}

@@ -1,0 +1,12 @@
+# tests/features/routing-events.feature
+Feature: Custom event dispatcher between standard routes and 404
+	There is a custom event dispatcher which sits between the standard routes and the 404 handler.
+    This allows for clean insertion of our domain-specific logic without disturbing the Flask ecosystem
+
+        Scenario: Requesting non-existent endpoint with event dispatcher
+            When I request the "/non-existent" endpoint
+            Then I should get a "404" status code
+
+        Scenario: Requesting handled endpoint with event dispatcher
+            When I request the "/handled-by-event" endpoint
+            Then I should get a "200" status code
