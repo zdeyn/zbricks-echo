@@ -31,18 +31,33 @@ def _(app : zApp, storage : dict):
         storage['handler_calls'].append( (msg, sender, event) )
         return Response(msg, status=200, content_type='text/plain')
     
-    # logger.zevent(f"Creating to event type '{event_type}'")
     storage['handler'] = test_handler
-    # logger.debug(f"STORAGE: {storage}")
 
 @given(parsers.parse('the handler is subscribed to "{event_type}" events'))
 def _(event_type: str, storage : dict):
     dispatcher : zEventDispatcher = storage['dispatcher']
-    cls = dispatcher.event_class_from_name(event_type)
+    cls = zEventDispatcher.event_class_from_name(event_type)
     assert issubclass(cls, zEvent)
     
     logger.debug(f"Subscribing, handler = '{storage['handler']}', event_type = '{event_type}'")
     dispatcher.subscribe(cls, storage['handler'])
+
+@given(parsers.parse('a handler named "{handler_name}" subscribed to "{event_type}" events'))
+def _(app: zApp, storage : dict, handler_name: str, event_type):
+    storage['app'] = app
+    storage['dispatcher'] = app.extensions['zevent']
+    storage['handler_calls'] = []
+
+    cls = zEventDispatcher.event_class_from_name(event_type)
+
+    def handler(sender, event : zEvent):
+        msg = f"Handled by {handler_name}"
+        logger.debug(f"Handler {handler_name}, msg = '{msg}', sender = '{sender}', event = '{event}'")        
+        storage['handler_calls'].append( (msg, sender, event) )
+
+    storage['handlers'][handler_name] = handler
+
+    storage['dispatcher'].subscribe(cls, handler)    
 
 
 @when(parsers.parse('I send "{event_type}" with its "{property_key}" property set to "{property_value}"'))
@@ -59,35 +74,45 @@ def _(storage, event_type, property_key, property_value):
     storage['replies'].append( replies )
 
 
-@then(parsers.parse('the subscriber should receive "{event_type}" with its "{property_key}" property set to "{property_value}"'))
+@then(parsers.parse('the handler should recieve "{event_type}" with its "{property_key}" property set to "{property_value}"'))
 def _(storage, event_type, property_key, property_value):
-    logger.debug(f"\nthe subscriber should receive '{event_type}' with its '{property_key}' property set to '{property_value}'")
-    # print(f"\nHandler calls: {storage['handler_calls']}")
-    #storage['handler_calls'].append( (msg, sender, event) )
+    logger.debug(f"\nthe handler should recieve '{event_type}' with its '{property_key}' property set to '{property_value}'")
 
     assert len(storage['handler_calls']) > 0
     for msg, sender, event in storage['handler_calls']:
-        # print(f"\nCall: msg = '{msg}', sender = '{sender}', event = '{event}'")
-        cls = zEventDispatcher.event_class_from_name(event_type)            
+        expecting_cls = zEventDispatcher.event_class_from_name(event_type)
+        recieved_cls = type(event)
             
-        if issubclass(cls, zEvent):
-            assert event.name == event_type
+        if issubclass(recieved_cls, expecting_cls):
             assert getattr(event, property_key) == property_value
             return True
         
     return False
 
-@then(parsers.parse('the subscriber should not receive "{event_type}"'))
+@then(parsers.parse('the handler named "{handler_name}" should recieve "{event_type}" with its "{property_key}" property set to "{property_value}"'))
+def _(storage, handler_name, event_type, property_key, property_value):
+    logger.debug(f"\nthe handler named '{handler_name}' should recieve '{event_type}' with its '{property_key}' property set to '{property_value}'")
+
+    assert len(storage['handler_calls']) > 0
+    for msg, sender, event in storage['handler_calls']:
+        expecting_cls = zEventDispatcher.event_class_from_name(event_type)
+        recieved_cls = type(event)
+
+        if issubclass(recieved_cls, expecting_cls):
+            assert getattr(event, property_key) == property_value
+            return True
+        
+    return False
+
+@then(parsers.parse('the handler should not recieve "{event_type}"'))
 def _(storage, event_type):
-    logger.debug(f"\nthe subscriber should not receive '{event_type}'")
-    # print(f"\nNEGATIVE andler calls: {storage['handler_calls']}")
-    #storage['handler_calls'].append( (msg, sender, event) )
+    logger.debug(f"\nthe handler should not recieve '{event_type}'")
 
     for msg, sender, event in storage['handler_calls']:
-        # print(f"\nCall: msg = '{msg}', sender = '{sender}', event = '{event}'")
-        cls = zEventDispatcher.event_class_from_name(event_type)            
+        expecting_cls = zEventDispatcher.event_class_from_name(event_type)
+        recieved_cls = type(event)
             
-        if sender != event_type:
+        if issubclass(recieved_cls, expecting_cls):
             return False
         
     return True
