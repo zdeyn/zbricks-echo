@@ -37,6 +37,7 @@ def storage(app : zApp) -> dict:
         'app': app,
         'request': Request|None, # type: ignore
         'response': Response|None, 
+        'handlers': {},
         'handler_calls': [],
         'replies': [],
     }

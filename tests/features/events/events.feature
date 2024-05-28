@@ -7,25 +7,33 @@ Feature: Custom event dispatcher
         Given a handler
         And the handler is subscribed to "<event_type>" events
         When I send "<event_type>" with its "<data_key>" property set to "<data_value>"
-        Then the subscriber should receive "<event_type>" with its "<data_key>" property set to "<data_value>"
+        Then the handler should recieve "<event_type>" with its "<data_key>" property set to "<data_value>"
 
         Examples:
             | event_type     | data_key   | data_value |
             | zEvent         | data       | foo        |
             | zSampleEvent   | data       | bar        |
     
-    Scenario: "zEvent" and "zSampleEvent" are both subscribed by a single handler, zSampleEvent is dispatched
+    Scenario: One handler, two subscriptions, "zSampleEvent" dispatched, only "zSampleEvent" recieved
         Given a handler
         And the handler is subscribed to "zEvent" events
         And the handler is subscribed to "zSampleEvent" events
         When I send "zSampleEvent" with its "data" property set to "baz"
-        Then the subscriber should receive "zSampleEvent" with its "data" property set to "baz"
-        And the subscriber should not receive "zEvent"
+        Then the handler should recieve "zSampleEvent" with its "data" property set to "baz"
+        And the handler should not recieve "zEvent"
     
-    Scenario: "zEvent" and "zSampleEvent" are both subscribed by a single handler, "zEvent" is dispatched
+    Scenario: One handler, two subscriptions, "zEvent" dispatched, only "zEvent" recieved
         Given a handler
         And the handler is subscribed to "zEvent" events
         And the handler is subscribed to "zSampleEvent" events
         When I send "zEvent" with its "data" property set to "qux"
-        Then the subscriber should receive "zEvent" with its "data" property set to "qux"
-        And the subscriber should not receive "zSampleEvent"
+        Then the handler should recieve "zEvent" with its "data" property set to "qux"
+        And the handler should not recieve "zSampleEvent"
+    
+    Scenario: Two handlers, "zSampleEvent" dispatched, both handlers recieve "zSampleEvent"
+        Given a handler named "base" subscribed to "zEvent" events
+        And a handler named "extended" subscribed to "zSampleEvent" events
+        When I send "zEvent" with its "data" property set to "woot"
+        Then the handler named "base" should recieve "zSampleEvent" with its "data" property set to "woot"
+        And the handler named "extended" should recieve "zSampleEvent" with its "data" property set to "woot"
+
