@@ -1,0 +1,16 @@
+<page url="/news" user="zdeyn" roles="admin" permissions="user.authenticated">
+    <header>
+        <branding text="zdeyn solves everything" link="index"/>
+        <nav-items>
+            <nav-item for="Dashboard" if-perm="user.authenticated"/>
+            <nav-item for="News"/>            
+        </nav-items>
+        <tools>
+            <login-tools if-not-perm="user.authenticated"/>
+            <user-tools if-perm="user.authenticated"/>
+            <admin-tools if-role="admin"/>
+        </tools>        
+    </header>
+    <main-content/>
+    <footer/>
+</page>
