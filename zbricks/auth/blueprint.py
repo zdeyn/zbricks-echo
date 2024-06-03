@@ -83,8 +83,8 @@ def authorize():
 
     profile_data = discord.get('users/@me')
 
-    if hasattr(profile_data, 'json'):
-        profile_data = profile_data.json()
+    if getattr(profile_data, 'is_json', False):
+        profile_data = profile_data.get_json()
         
     stmt = select(User).where(User.discord_id == profile_data['id'])
     user = db.session.execute(stmt).scalar_one_or_none()

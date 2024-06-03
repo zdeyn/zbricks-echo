@@ -12,6 +12,7 @@ dependencies = [
     "flask-jwt-extended",
     "flask-login",
     "authlib",
+    "python-dotenv",
     "requests",
     "uuid",
 ]
