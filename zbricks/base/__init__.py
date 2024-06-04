@@ -100,11 +100,11 @@ class zBrick:
 
     _zbricks_handlers: Dict[str, Dict[Any, Any]]
 
-    def _post_init(self):
-        '''
-        Hook for subclasses to perform post-initialization tasks.
-        '''
-        pass
+    # def _post_init(self):
+    #     '''
+    #     Hook for subclasses to perform post-initialization tasks.
+    #     '''
+    #     pass
 
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -114,7 +114,8 @@ class zBrick:
         :type name: Optional[str]
         '''
         super().__init__(*args, **kwargs)
-        self._post_init()
+        # self._post_init()
+        
     
     @classmethod
     def __call__(cls, *args) -> Generator[Any, Any, None]:

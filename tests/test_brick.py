@@ -65,7 +65,7 @@ class Test_zBrick_Augmentation:
         # assert call_handler
 
 
-class Test_zBrick_As_Callable:    
+class Test_zCallableAugmentation:    
 
     def test_exception_no_handlers_registered(self):
         """A zBrick raises an exception when called if no handlers are registered."""
