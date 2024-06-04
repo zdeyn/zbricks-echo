@@ -3,14 +3,27 @@ from typing import Any, Optional, Type, Union, get_type_hints
 from typing import Generator, Callable, Dict, Tuple
 import inspect
 
+from zbricks.logging import zbricks_logger
+
+logger = zbricks_logger(__name__)
+
 def call_handler(*arg_types):
     def decorator(func: Callable):
-        func._call_handler_arg_types = arg_types # type: ignore
+        # logger.debug(f"Registering call handler for {func} with arg_types: {arg_types}")
+        if not hasattr(func, '_zbricks_handlers'):
+            # logger.debug(f"Creating _zbricks_handlers attribute on {func}")
+            setattr(func, '_zbricks_handlers', {})
+        handlers : dict = getattr(func, '_zbricks_handlers')
+        if 'call' not in handlers.keys():
+            # logger.debug(f"Creating call handlers attribute on {func}")
+            handlers['call'] = {}
+        handlers['call'][arg_types] = func
+        # logger.debug(f"Handlers: {handlers}")
         return func
     return decorator
 
 class zCallableAugmentation:
-    _call_handlers: Dict[Tuple, Callable] = {}
+    # _call_handlers: Dict[Tuple, Callable] = {}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
@@ -18,29 +31,41 @@ class zCallableAugmentation:
 
     @classmethod
     def __call__(cls, *data: Optional[Any]):
-        if not cls._call_handlers:
-            raise NotImplementedError(f"{cls}: Not intended for use as a callable")
-        for arg_types, handler in cls._call_handlers.items():
+        handlers : Dict[str, Dict] = getattr(cls, '_zbricks_handlers', {})
+        if not handlers['call']:
+            raise NotImplementedError(f"{cls}: Not intended for use as a callable FROM AUGMENTATION")
+        
+        for arg_types, handler in handlers['call'].items():
             if len(arg_types) == 1 and isinstance(data, arg_types[0]):
                 return handler(cls, data)
             elif isinstance(data, tuple) and len(data) == len(arg_types):
                 if all(isinstance(d, t) for d, t in zip(data, arg_types)):
                     return handler(cls, *data)
+                
         raise NotImplementedError(f"{cls}: No handlers registered for __call__ input ({type(data)}): |{data}|")
 
     @classmethod
     def _register_call_handlers(cls):
-        for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
-            if hasattr(method, '_call_handler_arg_types'):
-                arg_types = method._call_handler_arg_types
-                cls._call_handlers[arg_types] = method
+        
+        if not hasattr(cls, '_zbricks_handlers'):
+            setattr(cls, '_zbricks_handlers', {})
+        handlers : dict = getattr(cls, '_zbricks_handlers')
+        if not 'call' in handlers.keys():
+            handlers['call'] = {}
+
+        for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):            
+            method_handlers : dict = getattr(method, '_zbricks_handlers', {})
+            if not 'call' in method_handlers.keys():
+                method_handlers['call'] = {}
+            
+            handlers['call'].update(method_handlers['call'])
 
 class zContextProxy:
     
     def push_local(self):
         pass
 
-class zBrick(ABC, zCallableAugmentation):
+class zBrick:
     '''
     Base class for all `zBrick`s. `zBrick`s are the building blocks of the `zbricks` framework.
 
@@ -73,13 +98,7 @@ class zBrick(ABC, zCallableAugmentation):
     - use the nested contexts and event dispatcher to locate and use the configured implementations for these abstract dependencies
     '''
 
-    name: Optional[str] = None
-    _gen: Generator[Any, Any, None]
-    _ctx: zContextProxy
-
-    @abstractmethod # MUST be implemented by subclasses
-    def _handler(self, args: Tuple) -> Any:
-        pass
+    _zbricks_handlers: Dict[str, Dict[Any, Any]]
 
     def _post_init(self):
         '''
@@ -94,34 +113,41 @@ class zBrick(ABC, zCallableAugmentation):
         :param name: The configuration of the brick.
         :type name: Optional[str]
         '''
-        name = kwargs.pop('name', None)
-        if name is not None:
-            self.name = name
-
-        # Init ContextProxy
-        self._ctx = zContextProxy()
-
-        self._gen = self._generator()
-        next(self._gen)  # Prime the generator
-
         super().__init__(*args, **kwargs)
-
         self._post_init()
+    
+    @classmethod
+    def __call__(cls, *args) -> Generator[Any, Any, None]:
+        '''
+        Hook for subclasses to handle being callable.
+        '''
+        raise NotImplementedError(f"{cls}: Not intended for use as a callable FROM BASE CLASS")
+    
+    @classmethod
+    def __iter__(cls) -> Generator[Any, Any, None]:
+        '''
+        Hook for subclasses to handle being iteratable.
+        '''
+        raise NotImplementedError(f"{cls}: Not intended for use as an iterator")
+    
+    @classmethod
+    def __next__(cls) -> Generator[Any, Any, None]:
+        '''
+        Hook for subclasses to handle being a generator.
+        '''
+        raise NotImplementedError(f"{cls}: Not intended for use as a generator")
+    
+    @classmethod
+    def __enter__(cls) -> Generator[Any, Any, None]:
+        '''
+        Hook for subclasses to handle being a context manager (enter).
+        '''
+        raise NotImplementedError(f"{cls}: Not intended for use as a context manager (enter)")
 
-    # def __init_subclass__(cls, **kwargs):
-    #     super().__init_subclass__(**kwargs)
-      
-    # def __call__(self, *args: Tuple):
-    #     result = self._gen.send(args)
-    #     next(self._gen)  # Move to next yield
-    #     return result
-    
-    def __iter__(self) -> Generator[Any, Any, None]:
-        return self._gen
-    
-    def _generator(self) -> Generator[Any, Any, None]:
-        while True:
-            value = yield
-            result = self._handler(value)
-            yield result
+    @classmethod
+    def __exit__(cls, *args) -> Generator[Any, Any, None]:
+        '''
+        Hook for subclasses to handle being a context manager (exit).
+        '''
+        raise NotImplementedError(f"{cls}: Not intended for use as a context manager (exit)")
 

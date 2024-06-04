@@ -9,9 +9,10 @@ from rich import print
 from pytest_mock import MockFixture
 
 from zbricks.base import zBrick, call_handler
+from zbricks.base import zEventDispatcher, zEvent, zEventSubscription
 from zbricks.bricks import zWsgiApplication
 from werkzeug.wrappers import Request, Response
 from werkzeug.test import Client
 
-class Test_zBrick_Dev:    
+class Test_zEventDispatcher_Dev:    
     pass    
