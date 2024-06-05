@@ -60,11 +60,6 @@ class zCallableAugmentation:
             
             handlers['call'].update(method_handlers['call'])
 
-class zContextProxy:
-    
-    def push_local(self):
-        pass
-
 class zBrick:
     '''
     Base class for all `zBrick`s. `zBrick`s are the building blocks of the `zbricks` framework.
@@ -100,11 +95,6 @@ class zBrick:
 
     _zbricks_handlers: Dict[str, Dict[Any, Any]]
 
-    # def _post_init(self):
-    #     '''
-    #     Hook for subclasses to perform post-initialization tasks.
-    #     '''
-    #     pass
 
     def __init__(self, *args, **kwargs) -> None:
         '''
@@ -114,7 +104,6 @@ class zBrick:
         :type name: Optional[str]
         '''
         super().__init__(*args, **kwargs)
-        # self._post_init()
         
     
     @classmethod
