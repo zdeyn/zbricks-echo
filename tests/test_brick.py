@@ -52,7 +52,7 @@ class Test_zBrick:
         assert e.match("ot intended for use as a context manager")
         assert e.match("exit")
 
-class Test_zBrick_Augmentation:
+class Test_zAugmentation:
 
     def test_decorator_exists(self):
         """The `handler` decorator exists."""
