@@ -115,7 +115,7 @@ class zWsgiApplication(zCallableAugmentation, zBrick):
     
     def _handle_request_event(self, event: zRequestEvent):
         request = event.request
-        path = request.path
+        path = request.path # type: ignore
         view_function = self._view_functions.get(path)
         if view_function: # resolve through direct routes first
             response = view_function(request)
