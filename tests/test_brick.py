@@ -3,16 +3,12 @@ from typing import Any, Callable, Generator, Iterable, Tuple, Union
 import pytest
 
 from unittest.mock import MagicMock
-from flask import Flask, make_response
 from rich import print
-# from flask.testing import FlaskClient
 from pytest_mock import MockFixture
+from werkzeug import Client
 
-from zbricks.base import zBrick, zCallableAugmentation, handler
-from zbricks.bricks import zWsgiApplication
-from werkzeug.wrappers import Request, Response
-from werkzeug.test import Client
-    
+from zbricks import zBrick, handler
+from zbricks.augmentations import zCallHandlerAugmentation
 
 class Test_zBrick:
 
@@ -61,10 +57,103 @@ class Test_zBrick_Augmentation:
     def test_decorator_exists(self):
         """The `handler` decorator exists."""
         assert callable(handler)
-        pass
+
+    def test_decorator_registers_function(self):
+        """The `handler` decorator registers a function correctly."""
+        class TestBrick(zBrick):
+            @handler('test_aug')
+            def test_method(self):
+                pass
+
+        brick = TestBrick()
+        registry = getattr(brick, '_aug_registry')
+        
+        # Check that the registry has an entry for the decorated method
+        assert len(registry._data) == 1
+        assert registry._data[0].method.__name__ == 'test_method'
+        assert registry._data[0].aug == 'test_aug'
+
+    def test_multiple_decorators(self):
+        """The `handler` decorator registers multiple functions correctly."""
+        class TestBrick(zBrick):
+            @handler('aug1')
+            def method_one(self):
+                pass
+            
+            @handler('aug2')
+            def method_two(self):
+                pass
+
+        brick = TestBrick()
+        registry = getattr(brick, '_aug_registry')
+
+        # Check that the registry has entries for both decorated methods
+        assert len(registry._data) == 2
+        methods = {entry.method.__name__: entry.aug for entry in registry._data}
+        assert methods == {'method_one': 'aug1', 'method_two': 'aug2'}
+
+    def test_decorator_with_args(self):
+        """The `handler` decorator registers a function with arguments correctly."""
+        class TestBrick(zBrick):
+            @handler('test_aug', 'arg1', kwarg1='value1')
+            def test_method(self, arg1, kwarg1):
+                pass
+
+        brick = TestBrick()
+        registry = getattr(brick, '_aug_registry')
+        
+        # Check that the registry has an entry with the correct args and kwargs
+        assert len(registry._data) == 1
+        entry = registry._data[0]
+        assert entry.method.__name__ == 'test_method'
+        assert entry.aug == 'test_aug'
+        assert entry.args == ('arg1',)
+        assert entry.kwargs == {'kwarg1': 'value1'}
+
+    def test_decorator_on_inherited_method(self):
+        """The `handler` decorator works with inherited methods."""
+        class BaseBrick(zBrick):
+            @handler('base_aug')
+            def base_method(self):
+                pass
+
+        class InheritedBrick(BaseBrick):
+            @handler('inherited_aug')
+            def inherited_method(self):
+                pass
+
+        brick = InheritedBrick()
+        registry = getattr(brick, '_aug_registry')
+
+        # Check that the registry has entries for both base and inherited methods
+        assert len(registry._data) == 2
+        methods = {entry.method.__name__: entry.aug for entry in registry._data}
+        assert methods == {'base_method': 'base_aug', 'inherited_method': 'inherited_aug'}
+
+    def test_conflicting_decorator_names(self):
+        """The `handler` decorator handles conflicting names gracefully."""
+        class TestBrick(zBrick):
+            @handler('conflict_aug')
+            def method_one(self):
+                pass
+
+            @handler('conflict_aug')
+            def method_two(self):
+                pass
+
+        brick = TestBrick()
+        registry = getattr(brick, '_aug_registry')
+
+        # Check that the registry has entries for both methods even with the same aug name
+        assert len(registry._data) == 2
+        assert registry._data[0].method.__name__ == 'method_one'
+        assert registry._data[0].aug == 'conflict_aug'
+        assert registry._data[1].method.__name__ == 'method_two'
+        assert registry._data[1].aug == 'conflict_aug'
 
 
-class Test_zCallableAugmentation:    
+
+class Test_zCallHandlerAugmentation:
 
     def test_exception_no_handlers_registered(self):
         """A zBrick raises an exception when called if no handlers are registered."""
@@ -78,7 +167,8 @@ class Test_zCallableAugmentation:
     def test_handler_is_called_when_expected(self):
         """A zBrick calls the handler which matches the signature"""
 
-        class TestBrick(zCallableAugmentation, zBrick):
+        class TestBrick(zBrick):
+        
             _handler_counter = 0
             _handler_log = []
 
@@ -101,7 +191,7 @@ class Test_zCallableAugmentation:
     
     def test_exception_no_handlers_matched(self):
         """A zBrick raises an exception when called if no handlers match the signature."""
-        class GreeterBrick(zCallableAugmentation, zBrick):
+        class GreeterBrick(zBrick):        
 
             @handler('call', sig=str)
             def _handler(self, target: str) -> Any:
@@ -122,7 +212,8 @@ class Test_zCallableAugmentation:
     
     def test_match_compound_input(self):
         """A zBrick decomposes and matches compound input."""
-        class FakeWsgiBrick(zCallableAugmentation, zBrick):
+        class FakeWsgiBrick(zBrick):
+        
             @handler('call', sig=(dict, Callable))
             def _handler(self, environ: dict, start_response: Callable):
                 assert isinstance(environ, dict)
