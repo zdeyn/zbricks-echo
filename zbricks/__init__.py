@@ -28,15 +28,16 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 
-from blinker import Namespace
+# from blinker import Namespace
 
 from .logging import zbricks_logger
 logger = zbricks_logger('zApp')
 
-from .auth import zAuth
-from .events import zEventDispatcher
+# from .auth import zAuth
+from .base import zBrick
+from .bricks import zEventDispatcher
 
-class zBrick(ABC):
+class zBrickOLD(ABC):
     name: Optional[str] = None
 
     def __init__(self, name = None):
@@ -71,12 +72,12 @@ class zBrick(ABC):
         return self._gen
 
 
-class zEchoBrick(zBrick):
+class zEchoBrickOLD(zBrick):
 
     def _handler(self, *args) -> Any:
         return f"<zEchoBrick name='{self.name}'> received: '{args}'"
 
-class zWsgiBrick(zBrick):
+class zWsgiBrickOLD(zBrick):
             
         def __init__(self, name=None):
             super().__init__(name)
@@ -125,7 +126,7 @@ class zWsgiBrick(zBrick):
             print(f"\n\nzWsgiBrick._handle_request returning response = '{response}'")
             return response
 
-class zApp(Flask):
+class zAppOld(Flask):
 
     def __init__(self, import_name: str, config_class = None, **kwargs):
 

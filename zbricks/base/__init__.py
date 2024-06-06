@@ -8,16 +8,31 @@ from zbricks.logging import zbricks_logger
 logger = zbricks_logger(__name__)
 
 def call_handler(*arg_types):
+    """
+    Decorator to register a call handler for a function.
+
+    :param arg_types: The types of arguments the handler will accept.
+    :type arg_types: Tuple
+
+    :return: The decorated function.
+
+    Installs a reference to arg_types in the _zbricks_func_handlers attribute of the decorated function.
+    This is later used when constructing an instance of a class that has been decorated with zCallableAugmentation.
+
+    func._zbricks_func_handlers = {
+        'call': [arg_types, ...]
+    }
+    """
     def decorator(func: Callable):
         # logger.debug(f"Registering call handler for {func} with arg_types: {arg_types}")
-        if not hasattr(func, '_zbricks_handlers'):
-            # logger.debug(f"Creating _zbricks_handlers attribute on {func}")
-            setattr(func, '_zbricks_handlers', {})
-        handlers : dict = getattr(func, '_zbricks_handlers')
+        if not hasattr(func, '_zbricks_func_handlers'):
+            # logger.debug(f"Creating _zbricks_func_handlers attribute on {func}")
+            setattr(func, '_zbricks_func_handlers', {})
+        handlers : dict = getattr(func, '_zbricks_func_handlers')
         if 'call' not in handlers.keys():
             # logger.debug(f"Creating call handlers attribute on {func}")
-            handlers['call'] = {}
-        handlers['call'][arg_types] = func
+            handlers['call'] = []
+        handlers['call'].append(arg_types)
         # logger.debug(f"Handlers: {handlers}")
         return func
     return decorator
@@ -25,40 +40,73 @@ def call_handler(*arg_types):
 class zCallableAugmentation:
     # _call_handlers: Dict[Tuple, Callable] = {}
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls._register_call_handlers()
+    # def __init_subclass__(cls) -> None:
+        # cls._register_call_handlers()
 
-    @classmethod
-    def __call__(cls, *data: Optional[Any]):
-        handlers : Dict[str, Dict] = getattr(cls, '_zbricks_handlers', {})
-        if not handlers['call']:
-            raise NotImplementedError(f"{cls}: Not intended for use as a callable FROM AUGMENTATION")
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._install_call_handlers()
+
+    # @classmethod
+    def __call__(self, *data: Optional[Any]):
+        instance_handlers : Dict[str, Dict] = getattr(self, '_zbricks_handlers', {})
+        if not getattr(self, '_zbricks_handlers', None):
+            raise NotImplementedError(f"{self.__class__}: Not intended for use as a callable FROM AUGMENTATION")
         
-        for arg_types, handler in handlers['call'].items():
+        for arg_types, handlers in instance_handlers['call'].items():
             if len(arg_types) == 1 and isinstance(data, arg_types[0]):
-                return handler(cls, data)
+                replies = []
+                for handler in handlers:
+                    replies.append(handler(data))                
+                return replies[0]
+            
             elif isinstance(data, tuple) and len(data) == len(arg_types):
                 if all(isinstance(d, t) for d, t in zip(data, arg_types)):
-                    return handler(cls, *data)
+                    replies = []
+                    for handler in handlers:
+                        replies.append(handler(*data))
+                    return replies[0]
                 
-        raise NotImplementedError(f"{cls}: No handlers registered for __call__ input ({type(data)}): |{data}|")
+        raise NotImplementedError(f"{self.__class__}: No handlers registered for __call__ input ({type(data)}): |{data}|")
 
-    @classmethod
-    def _register_call_handlers(cls):
+    # @classmethod
+    # def _register_call_handlers(cls):
+    #     pass
+        # if not hasattr(cls, '_zbricks_class_handlers'):
+        #     setattr(cls, '_zbricks_class_handlers', {})
+        # class_handlers : dict = getattr(cls, '_zbricks_class_handlers')
+        # if not 'call' in class_handlers.keys():
+        #     class_handlers['call'] = {}        
+
+        # for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):            
+        #     method_handlers : dict = getattr(method, '_zbricks_func_handlers', {})
+        #     if not 'call' in method_handlers.keys():
+        #         method_handlers['call'] = {}
+
+        #     for arg_types, _ in method_handlers['call'].items():
+        #         print(f"\nFound: {arg_types} -> {name}")
+        #         class_handlers['call'][arg_types] = class_handlers['call'].get(arg_types, [])
+        #         class_handlers['call'][arg_types].append(name)
+    
+    def _install_call_handlers(self):
+        instance_handlers : dict = getattr(self, '_zbricks_handlers', {})
+        if not 'call' in instance_handlers.keys():
+            instance_handlers['call'] = {}
         
-        if not hasattr(cls, '_zbricks_handlers'):
-            setattr(cls, '_zbricks_handlers', {})
-        handlers : dict = getattr(cls, '_zbricks_handlers')
-        if not 'call' in handlers.keys():
-            handlers['call'] = {}
+        # print(f"\nInstalling call handlers for {self.__class__} into {self}")
 
-        for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):            
-            method_handlers : dict = getattr(method, '_zbricks_handlers', {})
-            if not 'call' in method_handlers.keys():
-                method_handlers['call'] = {}
+        for name, method in inspect.getmembers(self):
+            # print(f"\nChecking {name} for call handlers")
+            if getattr(method, '_zbricks_func_handlers', None):
+                # print(f"\nFound zbricks func handlers: {name}")
+                method_handlers : dict = getattr(method, '_zbricks_func_handlers', {})
+                method_handlers['call'] = method_handlers.get('call', [])
             
-            handlers['call'].update(method_handlers['call'])
+                for arg_types in method_handlers['call']:
+                    # print(f"\nInstalling call handler: {arg_types} -> {name}")
+                    instance_handlers['call'][arg_types] = instance_handlers['call'].get(arg_types, [])
+                    instance_handlers['call'][arg_types].append(method)
+                      
 
 class zBrick:
     '''
@@ -103,41 +151,42 @@ class zBrick:
         :param name: The configuration of the brick.
         :type name: Optional[str]
         '''
+        self._zbricks_handlers = {}
         super().__init__(*args, **kwargs)
         
     
-    @classmethod
-    def __call__(cls, *args) -> Generator[Any, Any, None]:
+    # @classmethod
+    def __call__(self, *args) -> Generator[Any, Any, None]:
         '''
         Hook for subclasses to handle being callable.
         '''
-        raise NotImplementedError(f"{cls}: Not intended for use as a callable FROM BASE CLASS")
+        raise NotImplementedError(f"{self.__class__}: Not intended for use as a callable FROM BASE CLASS")
     
-    @classmethod
-    def __iter__(cls) -> Generator[Any, Any, None]:
+    # @classmethod
+    def __iter__(self) -> Generator[Any, Any, None]:
         '''
         Hook for subclasses to handle being iteratable.
         '''
-        raise NotImplementedError(f"{cls}: Not intended for use as an iterator")
+        raise NotImplementedError(f"{self.__class__}: Not intended for use as an iterator")
     
-    @classmethod
-    def __next__(cls) -> Generator[Any, Any, None]:
+    # @classmethod
+    def __next__(self) -> Generator[Any, Any, None]:
         '''
         Hook for subclasses to handle being a generator.
         '''
-        raise NotImplementedError(f"{cls}: Not intended for use as a generator")
+        raise NotImplementedError(f"{self.__class__}: Not intended for use as a generator")
     
-    @classmethod
-    def __enter__(cls) -> Generator[Any, Any, None]:
+    # @classmethod
+    def __enter__(self) -> Generator[Any, Any, None]:
         '''
         Hook for subclasses to handle being a context manager (enter).
         '''
-        raise NotImplementedError(f"{cls}: Not intended for use as a context manager (enter)")
+        raise NotImplementedError(f"{self.__class__}: Not intended for use as a context manager (enter)")
 
-    @classmethod
-    def __exit__(cls, *args) -> Generator[Any, Any, None]:
+    # @classmethod
+    def __exit__(self, *args) -> Generator[Any, Any, None]:
         '''
         Hook for subclasses to handle being a context manager (exit).
         '''
-        raise NotImplementedError(f"{cls}: Not intended for use as a context manager (exit)")
+        raise NotImplementedError(f"{self.__class__}: Not intended for use as a context manager (exit)")
 

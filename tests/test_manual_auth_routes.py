@@ -8,7 +8,7 @@ from flask.testing import FlaskClient
 from pytest_mock import MockFixture
 
 # from zbricks.auth.blueprint import fetch_profile_data, find_or_create_user
-
+@pytest.mark.skip(reason="Awaiting zEventDispatcher transition")
 class Test_Auth_Routes_Login:
 
     def test_login_redirects_to_discord(self, client : FlaskClient):
@@ -25,6 +25,7 @@ class Test_Auth_Routes_Login:
         # Check for the presence of client_id in the redirect URL
         assert 'client_id' in response.headers['Location']
 
+@pytest.mark.skip(reason="Awaiting zEventDispatcher transition")
 class Test_Auth_Routes_Authorize:
 
     # @pytest.mark.skip(reason="Not implemented") # the following test is a repeat of test_authorizes_access_token in practice

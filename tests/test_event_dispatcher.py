@@ -9,50 +9,32 @@ from rich import print
 from pytest_mock import MockFixture
 
 from zbricks.base import zBrick, call_handler
-from zbricks.bricks import zEventDispatcher, zEvent, zEventSubscription
+from zbricks.bricks import zEventDispatcher, zEvent
 from zbricks.bricks import zWsgiApplication
 from werkzeug.wrappers import Request, Response
 from werkzeug.test import Client
 
-class Test_zEventDispatcher_Sub_Decorator:
+class Test_zEventDispatcher_Multiple:    
 
-    def test_notifies_subscriber_exact(self):
-        calls = []
+    # @pytest.mark.skip(reason="...")
+    def test_zeds_are_independent(self):
+        zed_one = zEventDispatcher(name = 'one')
+        zed_two = zEventDispatcher(name = 'two')
 
-        zed = zEventDispatcher()
-
-        @zed.sub
         def handler(event: zEvent):
-            nonlocal calls
-            calls.append( ('handler', event) )
+            pass
 
-        ev = zEvent()
-        zed(ev)
-        assert len(calls) == 1
-        handler, event = calls[0]
-        assert handler == 'handler'
-        assert event is ev
+        zed_one.subscribe(handler)
+        assert handler in zed_one._event_subscriptions
+        assert len(zed_one._event_subscriptions[handler]) == 1
+
+        assert handler not in zed_two._event_subscriptions
     
-    def test_filters_multiple_subscribers_subtype(self):
-        class zSubEvent(zEvent): pass
-        calls = []
-
+    def test_can_subscribe(self):
         zed = zEventDispatcher()
 
-        @zed.sub(zEvent)
-        def called(event: zEvent):
-            nonlocal calls
-            calls.append( ('called', event) )
-
-        @zed.sub(zSubEvent)
-        def skipped(event: zSubEvent):
-            nonlocal calls
-            calls.append( ('skipped', event) )
-
-        ev = zEvent()
-        zed(ev)
-        assert len(calls) == 1        
-        assert calls[0] == ('called', ev)
+        def handle_event(event: zEvent):
+            pass
 
 class Test_zEventDispatcher_Subscribe:    
 
@@ -158,6 +140,46 @@ class Test_zEventDispatcher_Subscribe:
 
         zed.subscribe(called)
         zed.subscribe(skipped, zSubEvent)
+        ev = zEvent()
+        zed(ev)
+        assert len(calls) == 1        
+        assert calls[0] == ('called', ev)
+
+class Test_zEventDispatcher_Decorator:
+
+    def test_notifies_subscriber_exact(self):
+        calls = []
+
+        zed = zEventDispatcher()
+
+        @zed.sub
+        def handler(event: zEvent):
+            nonlocal calls
+            calls.append( ('handler', event) )
+
+        ev = zEvent()
+        zed(ev)
+        assert len(calls) == 1
+        handler, event = calls[0]
+        assert handler == 'handler'
+        assert event is ev
+    
+    def test_filters_multiple_subscribers_subtype(self):
+        class zSubEvent(zEvent): pass
+        calls = []
+
+        zed = zEventDispatcher()
+
+        @zed.sub(zEvent)
+        def called(event: zEvent):
+            nonlocal calls
+            calls.append( ('called', event) )
+
+        @zed.sub(zSubEvent)
+        def skipped(event: zSubEvent):
+            nonlocal calls
+            calls.append( ('skipped', event) )
+
         ev = zEvent()
         zed(ev)
         assert len(calls) == 1        

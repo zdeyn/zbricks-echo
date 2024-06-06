@@ -78,6 +78,7 @@ class Test_zCallableAugmentation:
     
     def test_handler_is_called_when_expected(self):
         """A zBrick calls the handler which matches the signature"""
+
         class TestBrick(zCallableAugmentation, zBrick):
             _handler_counter = 0
             _handler_log = []
