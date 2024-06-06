@@ -8,7 +8,7 @@ from rich import print
 # from flask.testing import FlaskClient
 from pytest_mock import MockFixture
 
-from zbricks.base import zBrick, zCallableAugmentation, call_handler
+from zbricks.base import zBrick, zCallableAugmentation, handler
 from zbricks.bricks import zWsgiApplication
 from werkzeug.wrappers import Request, Response
 from werkzeug.test import Client
@@ -48,8 +48,7 @@ class Test_zBrick:
 
         # has no context management exit handler
         class HalfCM(zBrick):
-            @classmethod
-            def __enter__(cls): pass
+            def __enter__(self): pass
         half_cm = HalfCM()    
         with pytest.raises(NotImplementedError) as e:
             with half_cm:
@@ -60,9 +59,9 @@ class Test_zBrick:
 class Test_zBrick_Augmentation:
 
     def test_decorator_exists(self):
-        """The call_handler decorator exists."""
+        """The `handler` decorator exists."""
+        assert callable(handler)
         pass
-        # assert call_handler
 
 
 class Test_zCallableAugmentation:    
@@ -83,7 +82,7 @@ class Test_zCallableAugmentation:
             _handler_counter = 0
             _handler_log = []
 
-            @call_handler(str)
+            @handler('call', sig=str)
             def _handler(self, my_string: str) -> Any:
                 self._handler_counter += 1
                 self._handler_log.append(my_string)
@@ -104,17 +103,17 @@ class Test_zCallableAugmentation:
         """A zBrick raises an exception when called if no handlers match the signature."""
         class GreeterBrick(zCallableAugmentation, zBrick):
 
-            @call_handler(str)
+            @handler('call', sig=str)
             def _handler(self, target: str) -> Any:
                 return f"Hello, {target}!"
 
-            @call_handler(list)
+            @handler('call', sig=list)
             def _list_handler(self, targets: list) -> Any:
                 return '\n'.join(f"Hello, {target}!" for target in targets)
 
         brick = GreeterBrick()
-        assert brick('LiLi') == "Hello, LiLi!"
-        assert brick(['Gary', 'Varian']) == "Hello, Gary!\nHello, Varian!"
+        assert brick('LiLi') == ["Hello, LiLi!"]
+        assert brick(['Gary', 'Varian']) == ["Hello, Gary!\nHello, Varian!"]
 
         with pytest.raises(NotImplementedError) as e:
             brick(1)
@@ -124,12 +123,12 @@ class Test_zCallableAugmentation:
     def test_match_compound_input(self):
         """A zBrick decomposes and matches compound input."""
         class FakeWsgiBrick(zCallableAugmentation, zBrick):
-            @call_handler(dict, Callable)
+            @handler('call', sig=(dict, Callable))
             def _handler(self, environ: dict, start_response: Callable):
                 assert isinstance(environ, dict)
                 assert callable(start_response)
                 start_response('200 OK', [('Content-Type', 'text/plain')])
-                return ['Hello, World!']
+                return 'Hello, World!'
 
         brick = FakeWsgiBrick()
         client = Client(brick)

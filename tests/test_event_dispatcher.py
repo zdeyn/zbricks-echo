@@ -8,7 +8,7 @@ from rich import print
 # from flask.testing import FlaskClient
 from pytest_mock import MockFixture
 
-from zbricks.base import zBrick, call_handler
+from zbricks.base import zBrick, handler
 from zbricks.bricks import zEventDispatcher, zEvent
 from zbricks.bricks import zWsgiApplication
 from werkzeug.wrappers import Request, Response

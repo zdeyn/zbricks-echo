@@ -6,7 +6,7 @@ from werkzeug.wrappers import Request, Response
 from werkzeug.routing import Map, Rule
 from werkzeug.serving import run_simple
 
-from zbricks.base import call_handler, zBrick, zCallableAugmentation
+from zbricks.base import handler, zBrick, zCallableAugmentation
 from zbricks.events import zEvent, zSampleEvent, zRequestEvent
 
 from rich import print
@@ -66,7 +66,7 @@ class zEventDispatcher(zCallableAugmentation, zBrick):
             return func
 
 
-    @call_handler(zEvent)
+    @handler('call', type=zEvent)
     def _handler(self, event: zEvent):
         replies = []
         logger.debug(f"\nzEventDispatcher: Sending event '{event}' to subscribers:")
@@ -97,7 +97,7 @@ class zWsgiApplication(zCallableAugmentation, zBrick):
             return f
         return decorator
 
-    @call_handler(Dict, Callable)
+    @handler('call', types=(Dict, Callable))
     def __wsgi_to_event(self, environ : Dict, start_response : Callable):
         request = Request(environ)
         path = request.path
