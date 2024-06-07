@@ -1,13 +1,13 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, List, Optional, Type, Union, get_type_hints
-from typing import Generator, Callable, Dict, Tuple
-import inspect
+from typing import TypeVar, Generic, List
 
 from zbricks.logging import zbricks_logger
 logger = zbricks_logger(__name__)
 
 from .base import zStud
+
+# Define a TypeVar for the zDataEntry type
+T = TypeVar('T', bound='zDataEntry')
 
 @dataclass
 class zDataEntry:
@@ -16,17 +16,15 @@ class zDataEntry:
     '''
     pass
 
-class zDataStorageStud(zStud):
+class zDataStorageStud(zStud, Generic[T]):
     '''
     A registry for storing zDataEntry objects.
     '''
-    _data: List[zDataEntry] = []
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._data = []
+        self._data: List[T] = []
 
-    def add(self, entry: zDataEntry):
+    def add(self, entry: T):
         if entry not in self._data:
             self._data.append(entry)
         else:

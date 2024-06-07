@@ -31,27 +31,27 @@ class zBrick(zCallHandlerAugmentation, zStud):
     
     '''    
     
-    _aug_data : zDataStorageStud
+    _aug_data : zDataStorageStud[zAugmentationEntry]
 
     def __init__(self, **kwargs):
-        self._aug_data : zDataStorageStud = zDataStorageStud()
+        self._aug_data = zDataStorageStud()
         super().__init__(**kwargs)
         self._embed_zbricks_data()
     
     def _embed_zbricks_data(self):     
         logger.debug(f"Embedding zBricks data, self = '{self}'")
 
-        aug_data : zDataStorageStud = getattr(self, '_aug_data', zDataStorageStud())
+        aug_data = getattr(self, '_aug_data', zDataStorageStud())
 
         for name, method in inspect.getmembers(self):
             logger.debug(f"Checking {name} for zbricks_method_data")
 
-            method_data : zDataStorageStud = getattr(method, '_zbricks_method_data', None)
+            method_data : zDataStorageStud[zAugmentationEntry] = getattr(method, '_zbricks_method_data', None)
             if not method_data: continue
 
             for entry in method_data:
                 logger.debug(f"Found zbricks method data: name = '{name}', entry = '{entry}'")
-                inst_entry = zAugmentationEntry(method=method, aug=getattr(entry, 'aug'), args=getattr(entry, 'args'), kwargs=getattr(entry, 'kwargs'))
+                inst_entry = zAugmentationEntry(method=method, aug=entry.aug, args=entry.args, kwargs=entry.kwargs)
                 aug_data.add(inst_entry)
 
 

@@ -1,8 +1,4 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import Any, List, Optional, Type, Union, get_type_hints
-from typing import Generator, Callable, Dict, Tuple
-import inspect
+from typing import Any, Generator, Iterator
 
 from zbricks.logging import zbricks_logger
 logger = zbricks_logger(__name__) 
@@ -30,7 +26,7 @@ class zStud(zBase):
         '''
         raise NotImplementedError(f"{self.__class__}: Not intended for use as a callable (zBrick)")
     
-    def __iter__(self) -> Generator[Any, Any, None]:
+    def __iter__(self) -> Iterator[Any]:
         '''
         Hook for subclasses to handle being iteratable.
         '''

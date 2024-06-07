@@ -67,7 +67,7 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        storage : zDataStorageStud[zAugmentationEntry] = getattr(brick, '_aug_data')
         assert isinstance(storage, zDataStorageStud)
         
         # Check that the registry has an entry for the decorated method
@@ -87,7 +87,7 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        storage : zDataStorageStud[zAugmentationEntry] = getattr(brick, '_aug_data')
         assert isinstance(storage, zDataStorageStud)
 
         # Check that the registry has entries for both decorated methods
@@ -103,7 +103,7 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        storage : zDataStorageStud[zAugmentationEntry] = getattr(brick, '_aug_data')
         assert isinstance(storage, zDataStorageStud)
         
         # Check that the registry has an entry with the correct args and kwargs
@@ -127,7 +127,7 @@ class Test_zAugmentation:
                 pass
 
         brick = InheritedBrick()
-        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        storage : zDataStorageStud[zAugmentationEntry] = getattr(brick, '_aug_data')
         assert isinstance(storage, zDataStorageStud)
 
         # Check that the registry has entries for both base and inherited methods
@@ -147,7 +147,7 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        storage : zDataStorageStud[zAugmentationEntry] = getattr(brick, '_aug_data')
         assert isinstance(storage, zDataStorageStud)
 
         # Check that the registry has entries for both methods even with the same aug name
