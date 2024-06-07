@@ -35,21 +35,12 @@ zBricks can:
 - use the nested contexts and event dispatcher to locate and use the configured implementations for these abstract dependencies
 """
 
-from abc import ABC, abstractmethod
 from typing import Any, Generator, Iterable, Optional, Tuple, Union, Callable
 
-from flask import Flask
-from werkzeug.wrappers import Request, Response
-from werkzeug.routing import Map, Rule
-from werkzeug.serving import run_simple
-
-# from blinker import Namespace
-
 from .logging import zbricks_logger
-logger = zbricks_logger('zApp')
+logger = zbricks_logger(__name__)
 
-# from .auth import zAuth
-from .base import zBrick
+# from .base import zBase
+from .studs import zStud
 from .augmentations import handler
-# from .bricks import zEventDispatcher
-from .events import zEvent, zSampleEvent, zRequestEvent
+from .bricks import zBrick

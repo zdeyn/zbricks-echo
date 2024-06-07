@@ -8,7 +8,8 @@ from pytest_mock import MockFixture
 from werkzeug import Client
 
 from zbricks import zBrick, handler
-from zbricks.augmentations import zCallHandlerAugmentation
+from zbricks.studs import zDataStorageStud
+from zbricks.augmentations import zAugmentationEntry
 
 class Test_zBrick:
 
@@ -66,12 +67,13 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        registry = getattr(brick, '_aug_registry')
+        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        assert isinstance(storage, zDataStorageStud)
         
         # Check that the registry has an entry for the decorated method
-        assert len(registry._data) == 1
-        assert registry._data[0].method.__name__ == 'test_method'
-        assert registry._data[0].aug == 'test_aug'
+        assert len(storage._data) == 1
+        assert storage._data[0].method.__name__ == 'test_method'
+        assert storage._data[0].aug == 'test_aug'
 
     def test_multiple_decorators(self):
         """The `handler` decorator registers multiple functions correctly."""
@@ -85,11 +87,12 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        registry = getattr(brick, '_aug_registry')
+        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        assert isinstance(storage, zDataStorageStud)
 
         # Check that the registry has entries for both decorated methods
-        assert len(registry._data) == 2
-        methods = {entry.method.__name__: entry.aug for entry in registry._data}
+        assert len(storage._data) == 2
+        methods = {entry.method.__name__: entry.aug for entry in storage._data}
         assert methods == {'method_one': 'aug1', 'method_two': 'aug2'}
 
     def test_decorator_with_args(self):
@@ -100,11 +103,12 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        registry = getattr(brick, '_aug_registry')
+        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        assert isinstance(storage, zDataStorageStud)
         
         # Check that the registry has an entry with the correct args and kwargs
-        assert len(registry._data) == 1
-        entry = registry._data[0]
+        assert len(storage._data) == 1
+        entry : zAugmentationEntry = storage._data[0]
         assert entry.method.__name__ == 'test_method'
         assert entry.aug == 'test_aug'
         assert entry.args == ('arg1',)
@@ -123,11 +127,12 @@ class Test_zAugmentation:
                 pass
 
         brick = InheritedBrick()
-        registry = getattr(brick, '_aug_registry')
+        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        assert isinstance(storage, zDataStorageStud)
 
         # Check that the registry has entries for both base and inherited methods
-        assert len(registry._data) == 2
-        methods = {entry.method.__name__: entry.aug for entry in registry._data}
+        assert len(storage._data) == 2
+        methods = {entry.method.__name__: entry.aug for entry in storage}
         assert methods == {'base_method': 'base_aug', 'inherited_method': 'inherited_aug'}
 
     def test_conflicting_decorator_names(self):
@@ -142,14 +147,15 @@ class Test_zAugmentation:
                 pass
 
         brick = TestBrick()
-        registry = getattr(brick, '_aug_registry')
+        storage : zDataStorageStud = getattr(brick, '_aug_data')
+        assert isinstance(storage, zDataStorageStud)
 
         # Check that the registry has entries for both methods even with the same aug name
-        assert len(registry._data) == 2
-        assert registry._data[0].method.__name__ == 'method_one'
-        assert registry._data[0].aug == 'conflict_aug'
-        assert registry._data[1].method.__name__ == 'method_two'
-        assert registry._data[1].aug == 'conflict_aug'
+        assert len(storage._data) == 2
+        assert storage._data[0].method.__name__ == 'method_one'
+        assert storage._data[0].aug == 'conflict_aug'
+        assert storage._data[1].method.__name__ == 'method_two'
+        assert storage._data[1].aug == 'conflict_aug'
 
 
 

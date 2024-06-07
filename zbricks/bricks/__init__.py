@@ -2,15 +2,14 @@ from typing import Callable, Dict, List, Optional, Tuple, Type
 import inspect
 from dataclasses import dataclass, field
 
-from zbricks.base import zBrick
-from zbricks.augmentations import handler
-from zbricks.events import zEvent, zSampleEvent, zRequestEvent
-
 from rich import print
 
 from zbricks.logging import zbricks_logger
 logger = zbricks_logger(__name__)
 
+from zbricks.augmentations import handler
+from .base import zBrick
+# from zbricks.events import zEvent, zSampleEvent, zRequestEvent
 
 # class zWsgiApplication(zBrick):    
 #     _view_functions: Dict[str, Callable] = {}
