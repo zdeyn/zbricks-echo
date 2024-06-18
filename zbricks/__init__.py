@@ -40,7 +40,7 @@ from typing import Any, Generator, Iterable, Optional, Tuple, Union, Callable
 from .logging import zbricks_logger
 logger = zbricks_logger(__name__)
 
-# from .base import zBase
+from .base import zBase, zDecorator
 from .studs import zStud
 from .augmentations import handler
 from .bricks import zBrick
