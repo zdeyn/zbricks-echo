@@ -1,42 +1,37 @@
 # config.py
 
+import os, dotenv
+
 class Config:
     """Base configuration variables."""
-    ENV = 'production'
-    SECRET_KEY = 'zdeyns-testing-key'
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///instance.db'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    DISCORD_CLIENT_ID = '1236201561127125114'
-    DISCORD_CLIENT_SECRET = 'y8qSw1U2pAYm8p7LJISXHhQS5FZt_IlR'
-    OAUTH_REDIRECT_URI = 'http://localhost:5000/auth/authorize'
+    dotenv.load_dotenv()
+    # Useful defaults
+    ENV = 'none'
+    DEBUG = False
+    TESTING = False
 
-    USE_SESSION_FOR_NEXT = True
-
-    JWT_SECRET_KEY = 'another-secret-key'
-    JWT_TOKEN_LOCATION = ['cookies']
-    JWT_COOKIE_SECURE = True
-    JWT_COOKIE_CSRF_PROTECT = True
-    
-    HOST = 'http://localhost'
+    SECRET_KEY = os.getenv('APP_SECRET_KEY', 'default-boring-secret-key')
+    HOST = 'localhost'
     PORT = '5000'
 
+    SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///:memory:')
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
 class DevelopmentConfig(Config):
     """Development configuration with debug enabled."""
     ENV = 'development'
     DEBUG = True
-    HOST = 'http://localhost'
-    PORT = '5000'
-    JWT_COOKIE_SECURE = False
-    JWT_COOKIE_CSRF_PROTECT = False
 
 class TestingConfig(Config):
     """Testing configuration with testing enabled."""
     ENV = 'testing'
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    JWT_COOKIE_SECURE = False
-    JWT_COOKIE_CSRF_PROTECT = False
+    # JWT_COOKIE_SECURE = False
+    # JWT_COOKIE_CSRF_PROTECT = False
 
 class ProductionConfig(Config):
     """Production configuration with debug disabled."""
+    ENV = 'production'
     DEBUG = False
+    # JWT_COOKIE_SECURE = True
+    # JWT_COOKIE_CSRF_PROTECT = True

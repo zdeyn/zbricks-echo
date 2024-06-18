@@ -7,10 +7,10 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.12"
 dependencies = [
+    "python-dotenv",
     "flask",
     "flask-sqlalchemy",
     "flask-jwt-extended",
-    "flask-login",
     "authlib",
     "requests",
     "uuid",

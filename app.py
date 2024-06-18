@@ -1,24 +1,12 @@
-from flask import Flask, render_template, get_flashed_messages, current_app
-from config import DevelopmentConfig
-from zbricks import zApp
+from zbricks import zBrick
+# from zbricks.hosts import zFlaskHost
+# from zbricks import flask_host
+# from zbricks import flask_brick
+# from zbricks import sqlalchemy_brick
 
-from zbricks.logging import zbricks_logger
 
-logger = zbricks_logger(__name__)
-
-def create_app(config_class=DevelopmentConfig):
-
-    logger.debug(f"create_app: Creating app, name = '{__name__}', config_class = '{config_class}'")
-    app = zApp(__name__, config_class=config_class)
-
-    @app.route('/')
-    def index():
-        flash_data = get_flashed_messages(with_categories=True, category_filter=['success'])
-        return render_template('index.html', content="Woot!")
-    
-    logger.debug(f"create_app: Finalized app, name = '{__name__}'")
+def create_app():
+    app = zBrick() # bare brick, to which other bricks may be attached
+    # flask_host = app.attach(flask_brick) # requires nothing, installs itself so app is now also an instance of Flask
+    # app.attach(sqlalchemy_brick) # requires flask_brick
     return app
-
-if __name__ == '__main__':
-    app = create_app()
-    app.run(use_reloader=True)
