@@ -5,12 +5,7 @@ from zbricks.core import zBrick
 # from zbricks.base import _zAttachment
 from rich import print
 
-class zTestBrick(zBrick):
-    def _attach_parent(self, parent: zAttachableMixin) -> None:
-        return super()._attach_parent(parent)
-    
-    def _attach_child(self, child: zAttachableMixin) -> None:
-        return super()._attach_child(child)
+class zTestBrick(zBrick): pass
 
 # Tests for _zAttachment dataclass
 # @pytest.mark.skip

@@ -5,8 +5,6 @@ from unittest.mock import MagicMock
 from pytest_mock import MockFixture
 from flask.testing import FlaskClient
 
-from zbricks.base import zAttachableMixin
-
 # from config import TestingConfig
 # from app import create_app
 

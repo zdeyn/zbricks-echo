@@ -3,31 +3,23 @@ from dataclasses import dataclass
 from typing import Any, Collection, Dict, List, Set, Type
 from typing import Optional, TypeVar, Union
 
+from rich import print
+
 # Declare T to be a class type
 T = TypeVar('T')
-
-# @dataclass(frozen=True)
-# class _zAttachment:
-#     id: Optional[str] = None  # must be unique if set
-#     value: Any = None
-
-#     # _zAttachment instances are equal if their ids are both set and equal, 
-#     # otherwise, if their ids are None and their values are equal
-#     def __eq__(self, other: Any) -> bool:
-#         if isinstance(other, _zAttachment):
-#             if self.id is not None or other.id is not None:
-#                 return self.id == other.id
-#             return self.value == other.value
-#         return False
-
-#     def __repr__(self) -> str:
-#         return f"_zAttachment(id={self.id}, value={self.value})"
-
 
 class zAttachableMixin:
     _name: Optional[str] = None
     _parent: Optional['zAttachableMixin'] = None
     _children: Set['zAttachableMixin']
+
+    @property
+    def name(self):
+        return self._name
+    
+    @name.setter
+    def name(self, value: str):
+        self._name = value
 
     @property
     def parent(self) -> Optional['zAttachableMixin']:
@@ -38,13 +30,16 @@ class zAttachableMixin:
         return [c for c in self._children]
 
     def __init__(self, 
-                children: Optional[Union[Collection[Any], Dict[str, Any]]] = None, 
                 *args, 
+                children: Optional[Union[Collection[Any], Dict[str, Any]]] = None, 
                 name: Optional[str] = None,
                 **kwargs
             ) -> None:
-        
+        # print(f"\nzAttachableMixin initialized with: {args}, {kwargs}, {children}, {name}")
+        self.name = name or self.name
         self._children = set()
+        children = kwargs.pop('children', children)
+
         if children:
             if isinstance(children, (list, set)):
                 for a in children:                    
@@ -55,41 +50,45 @@ class zAttachableMixin:
             else:
                 raise ValueError(f"Invalid attachments type: {type(children)}")
             
-        self._name = name or self._name
+        
+        super().__init__(*args, **kwargs)
 
     def attach(self, attachment: 'zAttachableMixin', key: Optional[str] = None) -> None:
         if not isinstance(attachment, zAttachableMixin):
-            raise ValueError(f"Invalid attachment: {attachment}")
+            raise ValueError(f"Attachment is not zAttachable: {attachment}")
         if attachment.parent:
-            raise ValueError(f"Attachment {attachment} already has a parent")
-        if attachment._name and attachment._name in self:
-            raise KeyError(f"Key {attachment._name} already exists")
+            raise ValueError(f"Attachment {attachment} already has a parent: {attachment.parent}")
+        if attachment.name and attachment.name in self:
+            raise KeyError(f"Key {attachment.name} already exists: {self[attachment.name]}")
         if key:
-            if attachment._name:
-                raise ValueError(f"Attachment {attachment} already has a key")
-            attachment._name = key        
+            if attachment.name:
+                raise ValueError(f"Attachment {attachment} already has a key: {attachment.name}")
+            attachment.name = key        
 
         self._children.add(attachment)
-        self._attach_child(attachment)
-
         attachment._parent = self
-        attachment._attach_parent(self)
-    
-    @abstractmethod
-    def _attach_child(self, child: 'zAttachableMixin') -> None:
-        pass
 
-    @abstractmethod
-    def _attach_parent(self, parent: 'zAttachableMixin') -> None:
-        pass
+        if hasattr(self, '_attach_child'):
+            self._attach_child(attachment)
+
+        if hasattr(attachment, '_attach_parent'):
+            attachment._attach_parent(self)
+    
+    # @abstractmethod
+    # def _attach_child(self, child: 'zAttachableMixin') -> None:
+    #     pass
+
+    # @abstractmethod
+    # def _attach_parent(self, parent: 'zAttachableMixin') -> None:
+    #     pass
 
     def __getitem__(self, key: Union[str, Type[T]]) -> Union[Any, List[T]]:
         if isinstance(key, type):
-            instances = [a for a in self._children if isinstance(a, key)]
+            instances = [a for a in self.children if isinstance(a, key)]
             if instances:
                 return instances
             raise KeyError(f"No instances of type {key} found")
-        for attachment in self._children:
+        for attachment in self.children:
             if attachment._name == key:
                 return attachment
         raise KeyError(f"Key {key} not found")
@@ -97,17 +96,17 @@ class zAttachableMixin:
     def __setitem__(self, key: str, brick: 'zAttachableMixin') -> None:
         if key in self:
             raise KeyError(f"Key {key} already exists")
-        if brick._name and brick._name != key:
-            raise ValueError(f"Brick {brick} already has a key: {brick._name}")
-        brick._name = key        
+        if brick.name and brick.name != key:
+            raise ValueError(f"Brick {brick} already has a key: {brick.name}")
+        brick.name = key        
         self.attach(brick)
 
     def __contains__(self, key: Union[str, type, object]) -> bool:
-        key_match = any(child for child in self._children if child._name == key)
+        key_match = any(child for child in self.children if child.name == key)
         if key_match: return True # early bail out
 
-        instance_match = any(child for child in self._children if child is key)
+        instance_match = any(child for child in self.children if child is key)
         if instance_match: return True # early bail out
 
-        type_match = isinstance(key, type) and any(issubclass(type(a), key) for a in self._children)
+        type_match = isinstance(key, type) and any(issubclass(type(a), key) for a in self.children)
         return type_match
