@@ -1,6 +1,6 @@
 # tests/test_zbrick.py
 import pytest
-from zbricks import zBrick
+from zbricks.attachable import zAttachableMixin
 from zbricks import zFlaskBrick, create_flask_brick
 
 from flask import Flask
@@ -18,7 +18,7 @@ class Test_FlaskBrick_Instance:
         assert isinstance(flask, Flask)
     
     def test_is_zbrick(self, flask):
-        assert isinstance(flask, zBrick)
+        assert isinstance(flask, zAttachableMixin)
 
 class Test_Example_zFlaskBrick_App:
     def test_create(self):

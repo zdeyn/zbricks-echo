@@ -1,7 +1,7 @@
 # tests/test_zbrick.py
 import pytest
-from zbricks import zBrick
-from zbricks.core import _zAttachment
+from zbricks.attachable import zAttachableMixin
+from zbricks.attachable import _zAttachment
 from rich import print
 
 # Tests for _zAttachment dataclass
@@ -32,42 +32,42 @@ class Test_zAttachment:
 class Test_zBrick_Instance:
 
     @pytest.fixture(scope='class')
-    def brick_with_attachments(self):
-        return zBrick(attachments={'foo': 'bar'})
+    def brick_with_children(self):
+        return zAttachableMixin(children={'foo': 'bar'})
 
     def test_exists(self):
-        assert zBrick() is not None
+        assert zAttachableMixin() is not None
     
-    def test_default_attachments(self):
-        brick = zBrick()
-        assert len(brick._attachments) == 0
+    def test_default_children(self):
+        brick = zAttachableMixin()
+        assert len(brick._children) == 0
     
-    def test_declared_attachments(self, brick_with_attachments):
-        assert 'foo' in brick_with_attachments
-        assert brick_with_attachments['foo'] == 'bar'
+    def test_declared_attachments(self, brick_with_children):
+        assert 'foo' in brick_with_children
+        assert brick_with_children['foo'] == 'bar'
 
 # zBrick attachments may be accessed using dictionary-style syntax by label 
 class Test_zBrick_Dict_by_Label:
 
     @pytest.fixture(scope='class')
     def empty_brick(self):
-        return zBrick()
+        return zAttachableMixin()
 
     @pytest.fixture(scope='class')
-    def brick_with_attachments(self):
-        return zBrick(attachments={'test': 'value'})
+    def brick_with_children(self):
+        return zAttachableMixin(children={'test': 'value'})
 
     def test_raises_exception(self, empty_brick):
         with pytest.raises(KeyError):
             _ = empty_brick['missing']
 
-    def test_returns_value(self, brick_with_attachments):
-        assert brick_with_attachments['test'] == 'value'
+    def test_returns_value(self, brick_with_children):
+        assert brick_with_children['test'] == 'value'
     
     def test_sets_value(self, empty_brick):
-        assert len(empty_brick._attachments) == 0
+        assert len(empty_brick._children) == 0
         empty_brick['test'] = 'value'
-        assert len(empty_brick._attachments) == 1
+        assert len(empty_brick._children) == 1
         assert empty_brick['test'] == 'value'
 
 # zBrick attachments may be accessed using dictionary-style syntax by type
@@ -75,11 +75,11 @@ class Test_zBrick_Dict_by_Type:
 
     @pytest.fixture(scope='class')
     def empty_brick(self):
-        return zBrick()
+        return zAttachableMixin()
 
     @pytest.fixture(scope='class')
-    def brick_with_attachments(self):
-        brick = zBrick()
+    def brick_with_children(self):
+        brick = zAttachableMixin()
         brick['test'] = 'value'
         return brick
 
@@ -87,60 +87,60 @@ class Test_zBrick_Dict_by_Type:
         with pytest.raises(KeyError):
             _ = empty_brick[str]
 
-    def test_returns_list_of_instances(self, brick_with_attachments):
-        assert brick_with_attachments[str] == ['value']
+    def test_returns_list_of_instances(self, brick_with_children):
+        assert brick_with_children[str] == ['value']
 
 # zBrick attachments may be membership checked using the 'in' operator by label
 class Test_zBrick_Contains_by_Label:
 
     @pytest.fixture(scope='class')
     def empty_brick(self):
-        return zBrick()
+        return zAttachableMixin()
 
     @pytest.fixture(scope='class')
-    def brick_with_attachments(self):
-        return zBrick(attachments={'test': 'value'})
+    def brick_with_children(self):
+        return zAttachableMixin(children={'test': 'value'})
 
     def test_returns_false_if_not_found(self, empty_brick):
         assert 'missing' not in empty_brick
 
-    def test_returns_true_if_found(self, brick_with_attachments):
-        assert 'test' in brick_with_attachments
+    def test_returns_true_if_found(self, brick_with_children):
+        assert 'test' in brick_with_children
 
 # zBrick attachments may be membership checked using the 'in' operator by type
 class Test_zBrick_Contains_by_Type:
 
     @pytest.fixture(scope='class')
     def empty_brick(self):
-        return zBrick()
+        return zAttachableMixin()
 
     @pytest.fixture(scope='class')
-    def brick_with_attachments(self):
-        return zBrick(attachments={'test': 'value'})
+    def brick_with_children(self):
+        return zAttachableMixin(children={'test': 'value'})
 
     def test_returns_false_if_not_found(self, empty_brick):
         assert str not in empty_brick
 
-    def test_returns_true_if_found(self, brick_with_attachments):
-        assert str in brick_with_attachments
+    def test_returns_true_if_found(self, brick_with_children):
+        assert str in brick_with_children
 
 # zBrick attachments may be membership checked using the 'in' operator by instance
 class Test_zBrick_Contains_by_Instance:
 
     @pytest.fixture(scope='function')
-    def child(self) -> zBrick:
-        return zBrick()
+    def child(self) -> zAttachableMixin:
+        return zAttachableMixin()
 
     @pytest.fixture(scope='function')
-    def parent(self, child) -> zBrick:
-        parent = zBrick([child])
+    def parent(self, child) -> zAttachableMixin:
+        parent = zAttachableMixin([child])
         assert child in parent.children
         assert child in parent
         return parent
     
     @pytest.fixture(scope='function')
-    def other(self) -> zBrick:
-        return zBrick()
+    def other(self) -> zAttachableMixin:
+        return zAttachableMixin()
 
     def test_returns_false_if_not_found(self, parent, other):
         assert other not in parent
@@ -153,12 +153,12 @@ class Test_zBrick_Contains_by_Instance:
 class Test_zBrick_Parent:
 
     @pytest.fixture(scope='function')
-    def parent(self) -> zBrick:
-        return zBrick()
+    def parent(self) -> zAttachableMixin:
+        return zAttachableMixin()
 
     @pytest.fixture(scope='function')
-    def child(self) -> zBrick:
-        return zBrick()
+    def child(self) -> zAttachableMixin:
+        return zAttachableMixin()
 
     def test_parent_key(self, parent, child):
         parent['child'] = child
