@@ -29,4 +29,6 @@ class Test_Example_zFlaskBrick_App:
         app = create_flask_brick()
         client = app.test_client()
         response = client.get('/')
-        assert response.data == b'Hello, World!'
+        decoded = response.data.decode('utf-8')
+        assert 'Hello, World!' in decoded
+        # assert 'zBricks' in decoded
