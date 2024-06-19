@@ -2,25 +2,31 @@
 import pytest
 from zbricks import zBrick
 from zbricks.core import _zAttachment
+from rich import print
 
 # Tests for _zAttachment dataclass
 class Test_zAttachment:
+    _123_foo = {'id':"123", 'value':"foo"}
+    _123_bar = {'id':"123", 'value':"bar"}
+    _456_foo = {'id':"456", 'value':"foo"}
+    _none_foo = {'id':None, 'value':"foo"}
+    _none_bar = {'id':None, 'value':"bar"}
 
-    @pytest.mark.parametrize("a1, a2", [
-        (_zAttachment(id="123", value="foo"), _zAttachment(id="123", value="bar")),
-        (_zAttachment(value="foo"), _zAttachment(value="foo")),
-        (_zAttachment(id=None, value="foo"), _zAttachment(id=None, value="foo"))
-    ])
-    def test_equality(self, a1, a2):
-        assert a1 == a2
+    tests = {
+        "positive case: ids match": (_123_foo, _123_bar, True), # ignores value
+        "negative case: ids do not match (set/set)": [_123_foo, _456_foo, False], # ignores value
+        "negative case: ids do not match (set/none)": [_123_foo, _none_foo, False], # ignores value
+        "positive case: no ids, values match": [_none_foo, _none_foo, True], # ignores ids
+        "negative case: no ids, values do not match": [_none_foo, _none_bar, False], # ignores ids
+    }
 
-    @pytest.mark.parametrize("a1, a2", [
-        (_zAttachment(id="123", value="foo"), _zAttachment(id="456", value="foo")),
-        (_zAttachment(value="foo"), _zAttachment(value="bar")),
-        (_zAttachment(id=None, value="foo"), _zAttachment(id=None, value="bar"))
-    ])
-    def test_inequality(self, a1, a2):
-        assert a1 != a2
+    @pytest.mark.parametrize(
+            "one, two, expected", [ v for v in tests.values() ], ids = [K for K in tests.keys()])
+    def test_equality(self, one, two, expected):
+        a1 = _zAttachment(**one)
+        a2 = _zAttachment(**two)
+        print(f"\nComparing {a1} to {a2}, expecting {expected}")
+        assert (a1 == a2) == expected  
 
 # zBricks can exist, and have attachments as they exist
 class Test_zBrick_Instance:

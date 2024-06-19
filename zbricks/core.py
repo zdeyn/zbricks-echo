@@ -13,10 +13,13 @@ class _zAttachment:
     # otherwise, if their ids are None and their values are equal
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, _zAttachment):
-            if self.id is not None and other.id is not None:
+            if self.id is not None or other.id is not None:
                 return self.id == other.id
             return self.value == other.value
         return False
+    
+    def __repr__(self) -> str:
+        return f"_zAttachment(id={self.id}, value={self.value})"
 
 class zBrick:
     _parent: Optional['zBrick'] = None
