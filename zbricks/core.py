@@ -1,5 +1,5 @@
 
-from zbricks.attachable import zAttachableMixin
+from zbricks.base import zAttachableMixin
 
 class zBrick(zAttachableMixin):
     pass

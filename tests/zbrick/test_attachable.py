@@ -1,7 +1,7 @@
 # tests/test_zbrick.py
 import pytest
-from zbricks.attachable import zAttachableMixin
-from zbricks.attachable import _zAttachment
+from zbricks.base import zAttachableMixin
+from zbricks.base import _zAttachment
 from rich import print
 
 # Tests for _zAttachment dataclass
@@ -25,7 +25,7 @@ class Test_zAttachment:
     def test_equality(self, one, two, expected):
         a1 = _zAttachment(**one)
         a2 = _zAttachment(**two)
-        print(f"\nComparing {a1} to {a2}, expecting {expected}")
+        # print(f"\nComparing {a1} to {a2}, expecting {expected}")
         assert (a1 == a2) == expected  
 
 # zBricks can exist, and have attachments as they exist
