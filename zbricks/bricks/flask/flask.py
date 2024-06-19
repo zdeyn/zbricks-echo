@@ -1,11 +1,11 @@
-from ..core import zBrick
+from ...core import zBrick
 from flask import Flask
 
 class zFlaskBrick(Flask, zBrick):
-    def __init__(self, **kwargs):
+    def __init__(self, *args, **kwargs):
         if 'import_name' not in kwargs:
             kwargs['import_name'] = __name__
-        super().__init__(**kwargs)
+        super().__init__(*args, **kwargs)
         
         @self.route('/')
         def index():
