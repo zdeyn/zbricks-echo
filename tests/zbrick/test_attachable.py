@@ -13,29 +13,29 @@ class zTestBrick(zBrick):
         return super()._attach_child(child)
 
 # Tests for _zAttachment dataclass
-@pytest.mark.skip
-class Test_zAttachment:
-    _123_foo = {'id':"123", 'value':"foo"}
-    _123_bar = {'id':"123", 'value':"bar"}
-    _456_foo = {'id':"456", 'value':"foo"}
-    _none_foo = {'id':None, 'value':"foo"}
-    _none_bar = {'id':None, 'value':"bar"}
+# @pytest.mark.skip
+# class Test_zAttachment:
+#     _123_foo = {'id':"123", 'value':"foo"}
+#     _123_bar = {'id':"123", 'value':"bar"}
+#     _456_foo = {'id':"456", 'value':"foo"}
+#     _none_foo = {'id':None, 'value':"foo"}
+#     _none_bar = {'id':None, 'value':"bar"}
 
-    tests = {
-        "positive case: ids match": (_123_foo, _123_bar, True), # ignores value
-        "negative case: ids do not match (set/set)": [_123_foo, _456_foo, False], # ignores value
-        "negative case: ids do not match (set/none)": [_123_foo, _none_foo, False], # ignores value
-        "positive case: no ids, values match": [_none_foo, _none_foo, True], # ignores ids
-        "negative case: no ids, values do not match": [_none_foo, _none_bar, False], # ignores ids
-    }
+#     tests = {
+#         "positive case: ids match": (_123_foo, _123_bar, True), # ignores value
+#         "negative case: ids do not match (set/set)": [_123_foo, _456_foo, False], # ignores value
+#         "negative case: ids do not match (set/none)": [_123_foo, _none_foo, False], # ignores value
+#         "positive case: no ids, values match": [_none_foo, _none_foo, True], # ignores ids
+#         "negative case: no ids, values do not match": [_none_foo, _none_bar, False], # ignores ids
+#     }
 
-    @pytest.mark.parametrize(
-            "one, two, expected", [ v for v in tests.values() ], ids = [K for K in tests.keys()])
-    def test_equality(self, one, two, expected):
-        a1 = _zAttachment(**one)
-        a2 = _zAttachment(**two)
-        # print(f"\nComparing {a1} to {a2}, expecting {expected}")
-        assert (a1 == a2) == expected  
+#     @pytest.mark.parametrize(
+#             "one, two, expected", [ v for v in tests.values() ], ids = [K for K in tests.keys()])
+#     def test_equality(self, one, two, expected):
+#         a1 = _zAttachment(**one)
+#         a2 = _zAttachment(**two)
+#         # print(f"\nComparing {a1} to {a2}, expecting {expected}")
+#         assert (a1 == a2) == expected  
 
 @pytest.fixture(scope='class')
 def brick() -> zAttachableMixin:
