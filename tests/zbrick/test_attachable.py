@@ -122,7 +122,7 @@ class Test_zBrick_Contains_by_Instance:
     def test_returns_true_if_found(self, brick_with_child, child):
         assert child in brick_with_child
 
-# TODO: 
+
 # attaching a zBrick to a zBrick sets the 'parent' key in the child's attachments
 class Test_zBrick_Parent:
 
