@@ -1,5 +1,5 @@
-from ...base import zAttachableMixin
-from ...core import zBrick
+from ....base import zAttachableMixin
+from ....core import zBrick
 
 # from .flask import zFlaskBrick
 from flask import Flask, Blueprint
@@ -27,6 +27,6 @@ class zFlaskBlueprintBrick(Blueprint, zBrick):
 
     def _setup_routes(self):
 
-        @self.route('/')
+        @self.route('/hello-world-blueprint')
         def index():
-            return 'Hello, World!'
+            return 'Hello, World! (love, Blueprint)'

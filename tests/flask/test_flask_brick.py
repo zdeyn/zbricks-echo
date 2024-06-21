@@ -24,10 +24,10 @@ class Test_Example_zFlaskBrick_App:
         app = create_flask_brick()
         assert isinstance(app, Flask)
     
-    def test_routing(self):
-        app = create_flask_brick()
-        client = app.test_client()
-        response = client.get('/')
-        decoded = response.data.decode('utf-8')
-        assert 'Hello, World!' in decoded
-        # assert 'zBricks' in decoded
+    # def test_routing(self):
+    #     app = create_flask_brick()
+    #     client = app.test_client()
+    #     response = client.get('/')
+    #     decoded = response.data.decode('utf-8')
+    #     assert 'Hello, World!' in decoded
+    #     # assert 'zBricks' in decoded

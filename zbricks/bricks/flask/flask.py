@@ -1,5 +1,5 @@
 from ...core import zBrick
-from .blueprint import zFlaskBlueprintBrick
+from .base import zFlaskBlueprintBrick
 from flask import Flask
 
 class zFlaskBrick(Flask, zBrick):
@@ -14,6 +14,4 @@ class zFlaskBrick(Flask, zBrick):
 
 def create_flask_brick():
     app = zFlaskBrick()
-    bp = zFlaskBlueprintBrick()
-    app.attach(bp)
     return app
