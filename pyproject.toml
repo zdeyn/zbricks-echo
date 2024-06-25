@@ -1,45 +1,28 @@
-[project]
+[tool.poetry]
 name = "zbricks"
-version = "0.1.0"
-description = "A framework providing ready-to-use bricks for rapid development."
-authors = [{ name = "zdeyn", email = "zdeyn@zdeyn.com" }]
+version = "0.2.0"
+description = "A framework providing ready-to-use bricks for rapid development"
+authors = ["zdeyn <i.am.zdeyn@gmail.com>"]
 readme = "README.md"
-license = { file = "LICENSE" }
-requires-python = ">=3.12"
-dependencies = [
-    "python-dotenv",
-    "flask",
-    "flask-sqlalchemy",
-    "flask-jwt-extended",
-    "authlib",
-    "requests",
-    "uuid",
-]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-dotenv = "^1.0.1"
+Flask = "^3.0.3"
+Flask-SQLAlchemy = "^3.1.1"
+requests = "^2.32.3"
+Authlib = "^1.3.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
+pytest-mock = "^3.14.0"
+pytest-bdd = "^7.2.0"
+mypy = "^1.10.0"
+rich = "^13.7.1"
 
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[project.urls]
-homepage = "https://github.com/zdeyn/zbricks"
-repository = "https://github.com/zdeyn/zbricks"
-documentation = "https://zdeyn.github.io/zbricks"
-
-[project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-mock",
-    "pytest-bdd",
-    "pytest-cov",
-    "coverage",
-    "mypy",
-    "rich",
-]
-
-
-
-[tool.setuptools]
-packages.find = { where = ["."], exclude = ["tests*"] }
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -49,6 +32,3 @@ python_classes = ["Test", "Should"]
 python_functions = ["test", "should"]
 addopts = "-q -cov-report=term-missing" # --cov=zbricks -
 bdd_features_base_dir = "tests"
-
-[tool.mypy]
-disable_error_code = ["import-untyped", "annotation-unchecked"]

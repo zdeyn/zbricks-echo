@@ -1,6 +1,6 @@
 # tests/test_zbrick.py
 import pytest
-from zbricks import zBrick, zFlaskBrick, create_flask_brick
+from zbricks import zBrick, zFlaskBrick
 
 from flask import Flask
 
@@ -21,7 +21,8 @@ class Test_FlaskBrick_Instance:
 
 class Test_Example_zFlaskBrick_App:
     def test_create(self):
-        app = create_flask_brick()
+        app = zFlaskBrick()
+        app.config.from_object('config.TestingConfig')
         assert isinstance(app, Flask)
     
     # def test_routing(self):

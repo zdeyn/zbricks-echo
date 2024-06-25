@@ -4,14 +4,17 @@ from flask import Flask
 
 class zFlaskBrick(Flask, zBrick):
     def __init__(self, *args, **kwargs):
+        # print(f"\nzFlaskBrick began init with: {args}, {kwargs}")
+        import_name = kwargs.pop('import_name', __name__)
+        config = kwargs.pop('config', None)
+        children = kwargs.pop('children', [])
         # print(f"\nzFlaskBrick initialized with: {args}, {kwargs}")
-        Flask.__init__(self, __name__, *args, **kwargs)
-        zBrick.__init__(self, *args, **kwargs)
-        
-        # @self.route('/')
-        # def index():
-        #     return 'Hello, World!'
+        Flask.__init__(self, 
+                    import_name, 
+                    *args, 
+                    # instance_relative_config=instance_relative_config,
+        )
+        if config:
+            self.config.from_object(config)
 
-def create_flask_brick():
-    app = zFlaskBrick()
-    return app
+        zBrick.__init__(self, *args, children=children, **kwargs)
