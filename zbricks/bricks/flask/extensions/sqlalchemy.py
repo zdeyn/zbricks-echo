@@ -11,10 +11,11 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from typing import TYPE_CHECKING, TypeVar, Type
 from flask_sqlalchemy.model import Model
+from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, declared_attr
 
 class Base(Model):
-  pass
-
+    pass
 
 class zSQLAlchemyBrick(SQLAlchemy, zFlaskExtensionBrick):
     _name = 'db'
@@ -31,7 +32,7 @@ class zSQLAlchemyBrick(SQLAlchemy, zFlaskExtensionBrick):
         self.init_app(app)
 
   
-db = zSQLAlchemyBrick(model_class=Base)
+db : zSQLAlchemyBrick = zSQLAlchemyBrick(model_class=Base)
 
 if TYPE_CHECKING:
     BaseModel = db.make_declarative_base(Base)

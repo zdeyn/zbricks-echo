@@ -4,7 +4,7 @@ from zbricks import zBrick, zFlaskBrick
 
 from flask import Flask
 
-class Test_FlaskBrick_Instance:
+class Test_zFlaskBrick_Instance:
 
     @pytest.fixture(scope='class')
     def flask(self):
@@ -19,7 +19,7 @@ class Test_FlaskBrick_Instance:
     def test_is_zbrick(self, flask):
         assert isinstance(flask, zBrick)
 
-class Test_Example_zFlaskBrick_App:
+class Test_zFlaskBrick_Example:
     def test_create(self):
         app = zFlaskBrick()
         app.config.from_object('config.TestingConfig')

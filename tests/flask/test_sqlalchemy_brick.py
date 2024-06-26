@@ -1,9 +1,8 @@
 # tests/test_zbrick.py
 import pytest
 from zbricks import zBrick, zFlaskBrick
-from zbricks.bricks.flask.extensions.sqlalchemy import zSQLAlchemyBrick
+from zbricks.bricks.sqla import zSQLAlchemyBrick
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.orm import DeclarativeMeta
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -14,10 +13,10 @@ def flask() -> zFlaskBrick:
 
 @pytest.fixture(scope='class')
 def sqlalchemy() -> zSQLAlchemyBrick:
-    from zbricks.live import db
+    from zbricks.bricks.sqla import db
     return db
 
-class Test_SQLAlchemyBrick_Instance:
+class Test_zSQLAlchemyBrick_Instance:
 
     def test_exists(self, sqlalchemy:zSQLAlchemyBrick):
         assert sqlalchemy is not None
@@ -28,7 +27,7 @@ class Test_SQLAlchemyBrick_Instance:
     def test_is_zbrick(self, sqlalchemy: zBrick):
         assert isinstance(sqlalchemy, zBrick)
 
-class Test_Example_zSQLAlchemyBrick_App:
+class Test_zSQLAlchemyBrick_Example:
     def test_works(self, flask: zFlaskBrick):
         app = flask
         app.config.from_object('config.TestingConfig')

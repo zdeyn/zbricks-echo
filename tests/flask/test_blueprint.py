@@ -13,7 +13,7 @@ def flask():
 def blueprint():
     return zFlaskBlueprintBrick()
 
-class Test_FlaskBlueprintBrick_Instance:
+class Test_zFlaskBlueprintBrick_Instance:
 
     def test_exists(self, blueprint:zFlaskBlueprintBrick):
         assert blueprint is not None
@@ -24,7 +24,7 @@ class Test_FlaskBlueprintBrick_Instance:
     def test_is_zbrick(self, blueprint):
         assert isinstance(blueprint, zBrick)
 
-class Test_Example_FlaskBlueprintBrick_App:
+class Test_zFlaskBlueprintBrick_Example:
     def test_works(self, flask: zFlaskBrick, blueprint: zFlaskBlueprintBrick):
         app = flask
         bp = blueprint

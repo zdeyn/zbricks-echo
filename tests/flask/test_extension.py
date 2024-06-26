@@ -13,7 +13,7 @@ def flask():
 def extension():
     return zFlaskExtensionBrick()
 
-class Test_FlaskBlueprintBrick_Instance:
+class Test_zFlaskExtensionBrick_Instance:
 
     def test_exists(self, extension:zFlaskExtensionBrick):
         assert extension is not None
@@ -21,7 +21,7 @@ class Test_FlaskBlueprintBrick_Instance:
     def test_is_extension(self, extension):
         assert isinstance(extension, zFlaskExtensionBrick)
 
-class Test_Example_FlaskBlueprintBrick_App:
+class Test_zFlaskExtensionBrick_Example:
 
     def test_works(self, flask: zFlaskBrick, extension: zFlaskExtensionBrick):
         app = flask

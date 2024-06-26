@@ -6,10 +6,13 @@ from flask import Flask, Blueprint
 
 class zFlaskBlueprintBrick(Blueprint, zBrick):
     _name = 'zFlaskBlueprintBrick'
+    _prefix = ''
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, name = 'bp', prefix = '', import_name = None, *args, **kwargs):
         # print(f"\nzFlaskBlueprintBrick initialized with: {args}, {kwargs}")
-        Blueprint.__init__(self, 'bp', *args, import_name=__name__, **kwargs)
+        self.name = name
+        self._prefix = prefix
+        Blueprint.__init__(self, name, import_name or __name__, *args, **kwargs)
         zBrick.__init__(self, *args, **kwargs)
 
     def _attach_parent(self, parent: zAttachableMixin) -> None:
@@ -23,7 +26,7 @@ class zFlaskBlueprintBrick(Blueprint, zBrick):
 
         self._setup_routes()
 
-        parent.register_blueprint(self, url_prefix='')
+        parent.register_blueprint(self, url_prefix=self._prefix)
 
     def _setup_routes(self):
 
